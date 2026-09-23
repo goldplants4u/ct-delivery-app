@@ -259,6 +259,22 @@ function getStopTotal_(stop) {
   return null;
 }
 
+// Same pattern as getStopTotal_ — prefer the stop-level corrected figure
+// (multi-order stops), fall back to the single order's own field. Added so
+// the PDF can show a Sub Total / Delivery Total breakdown like the ERP's
+// own Delivery Note, not just the one combined total the app already showed.
+function getStopSubtotal_(stop) {
+  if (stop.true_subtotal != null) return stop.true_subtotal;
+  if (stop.orders && stop.orders.length === 1 && stop.orders[0].subtotal != null) return stop.orders[0].subtotal;
+  return null;
+}
+
+function getStopDeliveryFee_(stop) {
+  if (stop.delivery_fee != null) return stop.delivery_fee;
+  if (stop.orders && stop.orders.length === 1 && stop.orders[0].delivery_fee != null) return stop.orders[0].delivery_fee;
+  return null;
+}
+
 function renderLineItemsTable_(stop) {
   const items = getLineItems_(stop);
   const table = document.getElementById("line-items-table");
@@ -576,6 +592,8 @@ async function submitStop_(wantsSignature) {
     truck: currentStop.truck,
     stop_id: currentStop.stop_id,
     customer_name: currentStop.customer_name,
+    customer_code: currentStop.customer_code || "",
+    cart_number: currentStop.cart_number || "",
     address: currentStop.address || "",
     payment_terms: currentStop.payment_terms || "",
     order_numbers: (currentStop.orders || []).map((o) => o.order_number),
@@ -587,6 +605,8 @@ async function submitStop_(wantsSignature) {
       item_name: li.item_name,
       size: li.size || "",
     })),
+    subtotal: getStopSubtotal_(currentStop),
+    delivery_fee: getStopDeliveryFee_(currentStop),
     total: getStopTotal_(currentStop),
     exceptions: exceptions,
     signature_captured: hasSignature,
