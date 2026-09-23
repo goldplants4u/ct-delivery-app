@@ -466,6 +466,9 @@ function wireSignatureScreen() {
 }
 
 function openSignatureScreen_(stop) {
+  isSubmitting = false;
+  document.getElementById("submit-btn").disabled = false;
+  document.getElementById("skip-sig-btn").disabled = false;
   document.getElementById("signature-stop-name").textContent = stop.customer_name;
   showScreen_("screen-signature");
   // The canvas lives inside a ".screen" that is "display:none" until now, so
@@ -542,8 +545,13 @@ function clearSignaturePad_() {
 // ==================================================================
 // SUBMIT
 // ==================================================================
+let isSubmitting = false; // guards against a double-tap firing two submits for one stop
+
 async function submitStop_(wantsSignature) {
-  if (!currentStop) return;
+  if (!currentStop || isSubmitting) return;
+  isSubmitting = true;
+  document.getElementById("submit-btn").disabled = true;
+  document.getElementById("skip-sig-btn").disabled = true;
 
   const racksUnloaded = currentStop._racksUnloadedEntered;
   const exceptions = Object.values(flaggedItems).map((ex) => ({
