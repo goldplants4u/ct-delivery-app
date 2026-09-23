@@ -27,6 +27,7 @@ let currentTruck = null;    // truck the driver is logged into
 let currentStop = null;     // the stop object currently open in stop/exceptions/signature screens
 let flaggedItems = {};      // idx -> {item_code, item_name, size, qty, reason, qty_change, notes}
 let sigPad = { ctx: null, drawing: false, hasStroke: false };
+let rackPhotoDataUrl = null; // compressed JPEG data URL of the driver's rack photo for the current stop, or null
 
 // ---------- boot ----------
 document.addEventListener("DOMContentLoaded", init);
@@ -37,6 +38,7 @@ async function init() {
   wireStopScreen();
   wireExceptionsScreen();
   wireSignatureScreen();
+  wirePhotoCapture();
   setupSignaturePad();
 
   try {
@@ -209,8 +211,22 @@ function wireStopScreen() {
 }
 
 function openStopScreen_(stop) {
+  // Only clear flagged exceptions when this is actually a different stop
+  // (opened fresh from the route list) — not when the driver taps "Back"
+  // from the exceptions screen to re-check racks/items on the *same* stop.
+  // Resetting unconditionally here used to silently drop already-flagged
+  // items on that back-and-forth (see PROJECT-NOTES.md).
+  const isNewStop = !currentStop || currentStop.stop_id !== stop.stop_id;
   currentStop = stop;
-  flaggedItems = {};
+  if (isNewStop) {
+    flaggedItems = {};
+    // Same reasoning applies to the signature and rack photo: clear them
+    // when starting a genuinely new stop, but leave them alone on a
+    // same-stop back-and-forth (e.g. sign -> back to exceptions -> forward
+    // to signature again shouldn't wipe a signature already captured).
+    clearSignaturePad_();
+    clearRackPhoto_();
+  }
 
   document.getElementById("stop-name").textContent = stop.customer_name;
 
@@ -490,9 +506,12 @@ function openSignatureScreen_(stop) {
   // The canvas lives inside a ".screen" that is "display:none" until now, so
   // getBoundingClientRect() would return 0x0 (and toDataURL() an empty image)
   // if we sized it back at DOMContentLoaded time. Size it here instead, now
-  // that the screen is actually visible, then clear it for this stop.
+  // that the screen is actually visible. This does NOT also clear the pad —
+  // that only happens in openStopScreen_ when it's actually a new stop (see
+  // its comment) — a same-stop revisit here must not wipe an already-drawn
+  // signature.
   resizeSignaturePad_();
-  clearSignaturePad_();
+  renderRackPhotoPreview_();
 }
 
 let resizeSignaturePad_ = function () {};
@@ -506,8 +525,15 @@ function setupSignaturePad() {
     const rect = canvas.getBoundingClientRect();
     if (rect.width === 0 || rect.height === 0) return; // screen not visible yet — skip, caller retries when it is
     const ratio = window.devicePixelRatio || 1;
-    canvas.width = rect.width * ratio;
-    canvas.height = rect.height * ratio;
+    const targetW = Math.round(rect.width * ratio);
+    const targetH = Math.round(rect.height * ratio);
+    // Setting canvas.width/height clears its bitmap even when set to the
+    // same value it already had — so skip re-sizing (and silently wiping
+    // an already-drawn signature) when nothing actually changed, e.g. when
+    // re-opening this screen for the same stop after a trip to exceptions.
+    if (canvas.width === targetW && canvas.height === targetH) return;
+    canvas.width = targetW;
+    canvas.height = targetH;
     ctx.scale(ratio, ratio);
     ctx.lineWidth = 2.5;
     ctx.lineCap = "round";
@@ -556,6 +582,84 @@ function clearSignaturePad_() {
   if (!ctx) return;
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   sigPad.hasStroke = false;
+}
+
+// ==================================================================
+// RACK PHOTO CAPTURE
+// ==================================================================
+function wirePhotoCapture() {
+  const input = document.getElementById("rack-photo-input");
+  document.getElementById("take-photo-btn").addEventListener("click", () => input.click());
+  document.getElementById("retake-photo-btn").addEventListener("click", () => input.click());
+
+  input.addEventListener("change", async () => {
+    const file = input.files && input.files[0];
+    input.value = ""; // reset so picking the same filename again (a retake) still fires "change"
+    if (!file) return;
+    try {
+      rackPhotoDataUrl = await compressImageFile_(file, 1280, 0.7);
+    } catch (err) {
+      rackPhotoDataUrl = null;
+      showToast("Could not read that photo — try again.");
+    }
+    renderRackPhotoPreview_();
+  });
+}
+
+function clearRackPhoto_() {
+  rackPhotoDataUrl = null;
+  renderRackPhotoPreview_();
+}
+
+function renderRackPhotoPreview_() {
+  const img = document.getElementById("rack-photo-preview");
+  const takeBtn = document.getElementById("take-photo-btn");
+  const retakeBtn = document.getElementById("retake-photo-btn");
+  if (!img || !takeBtn || !retakeBtn) return; // called once before DOMContentLoaded finishes wiring; harmless no-op
+  if (rackPhotoDataUrl) {
+    img.src = rackPhotoDataUrl;
+    img.classList.remove("hidden");
+    takeBtn.classList.add("hidden");
+    retakeBtn.classList.remove("hidden");
+  } else {
+    img.src = "";
+    img.classList.add("hidden");
+    takeBtn.classList.remove("hidden");
+    retakeBtn.classList.add("hidden");
+  }
+}
+
+// Downscales/recompresses a camera photo client-side before it ever becomes
+// a data URL — an un-resized iPad photo can be several MB, which is fine as
+// a one-off POST but would blow through localStorage's much smaller quota
+// (5-10MB total) once a few stops' worth queue up offline (see the offline
+// queue notes in PROJECT-NOTES.md). 1280px / JPEG quality 0.7 keeps a typical
+// rack photo well under 500KB while still being clearly legible.
+function compressImageFile_(file, maxDim, quality) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onerror = () => reject(reader.error || new Error("could not read file"));
+    reader.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error("could not decode image"));
+      img.onload = () => {
+        let w = img.naturalWidth;
+        let h = img.naturalHeight;
+        if (w > maxDim || h > maxDim) {
+          const scale = maxDim / Math.max(w, h);
+          w = Math.round(w * scale);
+          h = Math.round(h * scale);
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width = w;
+        canvas.height = h;
+        canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL("image/jpeg", quality));
+      };
+      img.src = reader.result;
+    };
+    reader.readAsDataURL(file);
+  });
 }
 
 // ==================================================================
@@ -611,6 +715,7 @@ async function submitStop_(wantsSignature) {
     exceptions: exceptions,
     signature_captured: hasSignature,
     signature_image: signatureImage,
+    rack_photo_image: rackPhotoDataUrl,
     contact_emails: currentStop.contact_emails || [],
     submitted_at_iso: new Date().toISOString(),
   };
@@ -620,6 +725,7 @@ async function submitStop_(wantsSignature) {
     racks_unloaded: racksUnloaded,
     exceptions: exceptions,
     signature_image: signatureImage,
+    rack_photo_image: rackPhotoDataUrl,
     signed_at: payload.submitted_at_iso,
     status: newStatus,
   });
@@ -635,6 +741,7 @@ async function submitStop_(wantsSignature) {
 
   currentStop = null;
   flaggedItems = {};
+  rackPhotoDataUrl = null;
   renderRouteList_();
   showScreen_("screen-route");
 }

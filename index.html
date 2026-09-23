@@ -92,6 +92,16 @@
     <button class="back" id="signature-back-btn">&larr; Back</button>
   </header>
   <main>
+    <div class="section-title">Photo of Delivered Rack (optional)</div>
+    <p class="hint">Snap a photo of the rack as delivered — useful if a count or condition is ever disputed later.</p>
+    <div class="photo-box">
+      <img id="rack-photo-preview" class="photo-preview hidden" alt="Rack photo">
+      <input type="file" accept="image/*" capture="environment" id="rack-photo-input" class="hidden">
+      <button class="secondary" id="take-photo-btn">Take Photo</button>
+      <button class="secondary hidden" id="retake-photo-btn">Retake Photo</button>
+    </div>
+
+    <div class="section-title">Signature</div>
     <p class="hint">Have the customer sign below, or skip if they're not available to sign digitally.</p>
     <canvas id="sig-pad"></canvas>
     <button class="secondary" id="clear-sig-btn">Clear</button>
