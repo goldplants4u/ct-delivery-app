@@ -1,0 +1,2748 @@
+{
+  "dispatch_date": "2026-09-23",
+  "trucks": [
+    "Truck 4",
+    "Truck 5"
+  ],
+  "excluded_pickup_orders": [
+    "Andrej Suske (112473, Pick-up)",
+    "Our Own Hands (112446, Pick-up)"
+  ],
+  "stops": [
+    {
+      "stop_id": "T4-1",
+      "truck": "Truck 4",
+      "customer_name": "Kings Garden",
+      "customer_code": "KIGA",
+      "cart_number": "K217",
+      "address": "1400 E Yonezawa Blvd., Moses Lake, WA 98837",
+      "delivery_region": "MOS",
+      "ship_state": "WA",
+      "payment_terms": "Due on receipt",
+      "delivery_instructions": "Meet at Lowe's 1400 E Yonezawa Blvd, Moses Lake. Call Fred 509.770.4853 45 minutes out.",
+      "racks_expected": 1,
+      "orders": [
+        {
+          "order_number": "112544",
+          "invoice_number": "112940",
+          "line_items": [
+            {
+              "qty": 1,
+              "item_code": "10santri",
+              "item_name": "Sansevieria tri. var. laurentii",
+              "size": "10in"
+            },
+            {
+              "qty": 6,
+              "item_code": "2aloama",
+              "item_name": "Alocasia amazonica Polly",
+              "size": "2in"
+            },
+            {
+              "qty": 20,
+              "item_code": "2neoast20",
+              "item_name": "Bromeliad Neoregelia assorted - 20 per flat",
+              "size": "2in"
+            },
+            {
+              "qty": 10,
+              "item_code": "2calpin1",
+              "item_name": "Callisia repens 'Pink Panther'",
+              "size": "2in"
+            },
+            {
+              "qty": 3,
+              "item_code": "2fitwhi",
+              "item_name": "Fittonia 'White Tiger'",
+              "size": "2in"
+            },
+            {
+              "qty": 10,
+              "item_code": "2hoyast",
+              "item_name": "Hoya assorted",
+              "size": "2in"
+            },
+            {
+              "qty": 10,
+              "item_code": "2litast",
+              "item_name": "Lithops assorted",
+              "size": "2in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4actaus",
+              "item_name": "Actiniopteris australis",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4alover",
+              "item_name": "Aloe vera",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4tilcya",
+              "item_name": "Tillandsia cyanea",
+              "size": "4in"
+            },
+            {
+              "qty": 3,
+              "item_code": "4trazeb1hb",
+              "item_name": "Tradescantia zebrina Red - HB",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4zambla",
+              "item_name": "Zamioculcas zamiifolia 'Black Queen'",
+              "size": "4in"
+            },
+            {
+              "qty": 3,
+              "item_code": "6aloama",
+              "item_name": "Alocasia amazonica Polly",
+              "size": "6in"
+            },
+            {
+              "qty": 3,
+              "item_code": "6bearecs",
+              "item_name": "Beaucarnea recurvata - stump",
+              "size": "6in"
+            },
+            {
+              "qty": 3,
+              "item_code": "6calpin1hb",
+              "item_name": "Callisia repens 'Pink Panther' - HB",
+              "size": "6in"
+            },
+            {
+              "qty": 3,
+              "item_code": "6epiaur5hbxl",
+              "item_name": "Epipremnum aur. Sunshine Goddess XL - HB",
+              "size": "6in"
+            },
+            {
+              "qty": 3,
+              "item_code": "6hoycomhb",
+              "item_name": "Hoya carnosa 'Compacta' - HB",
+              "size": "6in"
+            },
+            {
+              "qty": 3,
+              "item_code": "6monadaup",
+              "item_name": "Monstera adansonii - upright",
+              "size": "6in"
+            },
+            {
+              "qty": 3,
+              "item_code": "6nemgrehb",
+              "item_name": "Nematanthus gregarius - HB",
+              "size": "6in"
+            },
+            {
+              "qty": 3,
+              "item_code": "6senrowhb",
+              "item_name": "Senecio rowleyanus - HB",
+              "size": "6in"
+            },
+            {
+              "qty": 1,
+              "item_code": "8epiaurhb",
+              "item_name": "Epipremnum aureum - HB",
+              "size": "8in"
+            }
+          ],
+          "unit_total": 108,
+          "subtotal": 846.75,
+          "delivery_fee": 150.0,
+          "total": 996.75
+        }
+      ],
+      "total_discrepancy_note": null,
+      "contact_emails": [
+        "kingsgardennursery@gmail.com"
+      ],
+      "driver_state": {
+        "racks_unloaded": null,
+        "exceptions": [],
+        "signature_image": null,
+        "signed_at": null,
+        "status": "pending"
+      }
+    },
+    {
+      "stop_id": "T4-2",
+      "truck": "Truck 4",
+      "customer_name": "Moscow & Pullman Building Supply",
+      "customer_code": "MPBS",
+      "cart_number": "M119",
+      "address": "760 North Main Street, Moscow, ID 83843",
+      "delivery_region": "PLM",
+      "ship_state": "ID",
+      "payment_terms": "Net 30",
+      "delivery_instructions": "Pullman WA store closing - all deliveries now to Moscow Idaho store. Open 7am-6pm.",
+      "racks_expected": 2,
+      "orders": [
+        {
+          "order_number": "112505",
+          "invoice_number": "112902",
+          "line_items": [
+            {
+              "qty": 10,
+              "item_code": "3tilast",
+              "item_name": "Tillandsia assorted",
+              "size": "-"
+            },
+            {
+              "qty": 2,
+              "item_code": "platre1p10",
+              "item_name": "Plant Trellis - Bamboo 24in - Pack of 10",
+              "size": "Each"
+            },
+            {
+              "qty": 1,
+              "item_code": "mospol2",
+              "item_name": "Moss Pole - 12in",
+              "size": "Multi"
+            },
+            {
+              "qty": 1,
+              "item_code": "mospol3",
+              "item_name": "Moss Pole - 24in",
+              "size": "Multi"
+            },
+            {
+              "qty": 1,
+              "item_code": "10chacat",
+              "item_name": "Chamaedorea cataractarum",
+              "size": "10in"
+            },
+            {
+              "qty": 1,
+              "item_code": "10dramar2cn",
+              "item_name": "Dracaena marginata - cane",
+              "size": "10in"
+            },
+            {
+              "qty": 1,
+              "item_code": "10nepexahb",
+              "item_name": "Nephrolepis exaltata - HB",
+              "size": "10in"
+            },
+            {
+              "qty": 1,
+              "item_code": "10santri",
+              "item_name": "Sansevieria tri. var. laurentii",
+              "size": "10in"
+            },
+            {
+              "qty": 1,
+              "item_code": "10sanzey",
+              "item_name": "Sansevieria zeylanica",
+              "size": "10in"
+            },
+            {
+              "qty": 10,
+              "item_code": "2drasan1cp",
+              "item_name": "Dracaena sanderiana - ceramic pot",
+              "size": "2in"
+            },
+            {
+              "qty": 20,
+              "item_code": "2phiast20",
+              "item_name": "Philodendron assorted - 20 per flat",
+              "size": "2in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4aesmon",
+              "item_name": "Aeschynanthus 'Mona Lisa'",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4aesbla",
+              "item_name": "Aeschynanthus long. 'Black Pagoda'",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4aesant",
+              "item_name": "Aeschynanthus rad. 'Antares'",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4alofry",
+              "item_name": "Alocasia 'Frydek'",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4aphsqu",
+              "item_name": "Aphelandra squarrosa",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4aspset",
+              "item_name": "Asparagus setaceus",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4begmac2",
+              "item_name": "Begonia maculata Silver Spot",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4callan",
+              "item_name": "Calathea lancifolia",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4calrep",
+              "item_name": "Callisia repens",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4calpin1",
+              "item_name": "Callisia repens 'Pink Panther'",
+              "size": "4in"
+            },
+            {
+              "qty": 3,
+              "item_code": "4calpin1hb",
+              "item_name": "Callisia repens 'Pink Panther' - HB",
+              "size": "4in"
+            },
+            {
+              "qty": 3,
+              "item_code": "4chlbonhb",
+              "item_name": "Chlorophytum comosum 'Bonnie' - HB",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4chlhaw",
+              "item_name": "Chlorophytum comosum 'Hawaiian'",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4chloce",
+              "item_name": "Chlorophytum comosum 'Ocean'",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4cottom",
+              "item_name": "Cotyledon tomentosa",
+              "size": "4in"
+            },
+            {
+              "qty": 2,
+              "item_code": "4craova",
+              "item_name": "Crassula ovata",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4diepan",
+              "item_name": "Dieffenbachia 'Panther'",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4epinjo",
+              "item_name": "Epipremnum aur. 'Njoy'",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4epiaur",
+              "item_name": "Epipremnum aureum",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4euprub",
+              "item_name": "Euphorbia trigona 'Rubra'",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4ficpum1",
+              "item_name": "Ficus pumila var. quercifolia",
+              "size": "4in"
+            },
+            {
+              "qty": 10,
+              "item_code": "4hoyast10",
+              "item_name": "Hoya assorted - 10 per flat",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4kaltom",
+              "item_name": "Kalanchoe tomentosa",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4mimpud",
+              "item_name": "Mimosa pudica",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4pephop",
+              "item_name": "Peperomia 'Hope'",
+              "size": "4in"
+            },
+            {
+              "qty": 3,
+              "item_code": "4pephophb",
+              "item_name": "Peperomia 'Hope' - HB",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4pepwat",
+              "item_name": "Peperomia argyreia Watermelon",
+              "size": "4in"
+            },
+            {
+              "qty": 10,
+              "item_code": "4pepast10",
+              "item_name": "Peperomia assorted - 10 per flat",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4pepred1",
+              "item_name": "Peperomia caperata 'Red Luna'",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4pepros",
+              "item_name": "Peperomia caperata 'Rosso'",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4pepdep",
+              "item_name": "Peperomia deppeana",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4pepniv",
+              "item_name": "Peperomia nivalis",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4phipri",
+              "item_name": "Philodendron 'Prince of Orange'",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4phisil",
+              "item_name": "Philodendron heder. 'Silver Stripe'",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4pilpep",
+              "item_name": "Pilea peperomioides",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4sensta",
+              "item_name": "Senecio stapeliiformis",
+              "size": "4in"
+            },
+            {
+              "qty": 3,
+              "item_code": "4tranhb",
+              "item_name": "Tradescantia albiflora 'Nanouk' - HB",
+              "size": "4in"
+            },
+            {
+              "qty": 3,
+              "item_code": "4trazebhb",
+              "item_name": "Tradescantia zebrina Purple - HB",
+              "size": "4in"
+            },
+            {
+              "qty": 3,
+              "item_code": "4trazeb1hb",
+              "item_name": "Tradescantia zebrina Red - HB",
+              "size": "4in"
+            },
+            {
+              "qty": 3,
+              "item_code": "6aesmonhb",
+              "item_name": "Aeschynanthus 'Mona Lisa' - HB",
+              "size": "6in"
+            },
+            {
+              "qty": 3,
+              "item_code": "6aesrashb",
+              "item_name": "Aeschynanthus rad. 'Rasta' - HB",
+              "size": "6in"
+            },
+            {
+              "qty": 3,
+              "item_code": "6aloama",
+              "item_name": "Alocasia amazonica Polly",
+              "size": "6in"
+            },
+            {
+              "qty": 3,
+              "item_code": "6alover",
+              "item_name": "Aloe vera",
+              "size": "6in"
+            },
+            {
+              "qty": 3,
+              "item_code": "6aspsetup",
+              "item_name": "Asparagus setaceus - upright",
+              "size": "6in"
+            },
+            {
+              "qty": 3,
+              "item_code": "6bearecs",
+              "item_name": "Beaucarnea recurvata - stump",
+              "size": "6in"
+            },
+            {
+              "qty": 3,
+              "item_code": "6calwar",
+              "item_name": "Calathea warscewiczii",
+              "size": "6in"
+            },
+            {
+              "qty": 3,
+              "item_code": "6dietro2",
+              "item_name": "Dieffenbachia 'Tropic Snow'",
+              "size": "6in"
+            },
+            {
+              "qty": 3,
+              "item_code": "6dieves",
+              "item_name": "Dieffenbachia 'Vesuvius'",
+              "size": "6in"
+            },
+            {
+              "qty": 3,
+              "item_code": "6epimarup",
+              "item_name": "Epipremnum aur. 'Marble Queen' - upright",
+              "size": "6in"
+            },
+            {
+              "qty": 3,
+              "item_code": "6ficbam",
+              "item_name": "Ficus lyrata comp. 'Bambino'",
+              "size": "6in"
+            },
+            {
+              "qty": 3,
+              "item_code": "6hoykri1hb",
+              "item_name": "Hoya carnosa 'Krimson Queen' - HB",
+              "size": "6in"
+            },
+            {
+              "qty": 3,
+              "item_code": "6jassam",
+              "item_name": "Jasminum sambac",
+              "size": "6in"
+            },
+            {
+              "qty": 3,
+              "item_code": "6marlemup",
+              "item_name": "Maranta leuc. 'Lemon Lime' - upright",
+              "size": "6in"
+            },
+            {
+              "qty": 3,
+              "item_code": "6nepexahb",
+              "item_name": "Nephrolepis exaltata - HB",
+              "size": "6in"
+            },
+            {
+              "qty": 3,
+              "item_code": "6phicorhb",
+              "item_name": "Philodendron cordatum - HB",
+              "size": "6in"
+            },
+            {
+              "qty": 3,
+              "item_code": "6pilpep",
+              "item_name": "Pilea peperomioides",
+              "size": "6in"
+            },
+            {
+              "qty": 3,
+              "item_code": "6rhatet",
+              "item_name": "Rhaphidophora tetrasperma",
+              "size": "6in"
+            },
+            {
+              "qty": 3,
+              "item_code": "6senvarhb",
+              "item_name": "Senecio macroglossus 'Variegatus' - HB",
+              "size": "6in"
+            },
+            {
+              "qty": 3,
+              "item_code": "6strtri",
+              "item_name": "Stromanthe sanguinea 'Triostar'",
+              "size": "6in"
+            },
+            {
+              "qty": 3,
+              "item_code": "6trazebhb",
+              "item_name": "Tradescantia zebrina Purple - HB",
+              "size": "6in"
+            },
+            {
+              "qty": 1,
+              "item_code": "8ficretbo",
+              "item_name": "Ficus retusa - bonsai s-shape",
+              "size": "8in"
+            },
+            {
+              "qty": 1,
+              "item_code": "9draliscn",
+              "item_name": "Dracaena frag. 'Lisa' - cane 3ft",
+              "size": "9in"
+            }
+          ],
+          "unit_total": 304,
+          "subtotal": 2250.0,
+          "delivery_fee": 235.0,
+          "total": 2485.0
+        }
+      ],
+      "total_discrepancy_note": null,
+      "contact_emails": [
+        "bshores@mbspbs.com",
+        "lcheek@mbspbs.com"
+      ],
+      "driver_state": {
+        "racks_unloaded": null,
+        "exceptions": [],
+        "signature_image": null,
+        "signed_at": null,
+        "status": "pending"
+      }
+    },
+    {
+      "stop_id": "T4-3",
+      "truck": "Truck 4",
+      "customer_name": "Wenatchee Green Thumb LLC",
+      "customer_code": "MO30",
+      "cart_number": "M233",
+      "address": "7A S Wenatchee Ave, Wenatchee, WA 98801",
+      "delivery_region": "WEN",
+      "ship_state": "WA",
+      "payment_terms": "Due on receipt",
+      "delivery_instructions": "Monday - Saturday (10-5).",
+      "order_notes": "Paid",
+      "racks_expected": 2,
+      "orders": [
+        {
+          "order_number": "112476",
+          "invoice_number": "112873",
+          "line_items": [
+            {
+              "qty": 1,
+              "item_code": "10dracolcn",
+              "item_name": "Dracaena marg. 'Colorama' - Cane",
+              "size": "10in"
+            },
+            {
+              "qty": 1,
+              "item_code": "10dramar2cn",
+              "item_name": "Dracaena marginata - cane",
+              "size": "10in"
+            },
+            {
+              "qty": 1,
+              "item_code": "14mondel",
+              "item_name": "Monstera deliciosa",
+              "size": "14in"
+            },
+            {
+              "qty": 1,
+              "item_code": "14phicon2",
+              "item_name": "Philodendron 'Congo Rojo'",
+              "size": "14in"
+            },
+            {
+              "qty": 5,
+              "item_code": "2aloven1",
+              "item_name": "Alocasia 'Venom'",
+              "size": "2in"
+            },
+            {
+              "qty": 10,
+              "item_code": "2calpin1",
+              "item_name": "Callisia repens 'Pink Panther'",
+              "size": "2in"
+            },
+            {
+              "qty": 10,
+              "item_code": "2fitwhi",
+              "item_name": "Fittonia 'White Tiger'",
+              "size": "2in"
+            },
+            {
+              "qty": 10,
+              "item_code": "2fitfor1",
+              "item_name": "Fittonia albivenis 'Forest Flame'",
+              "size": "2in"
+            },
+            {
+              "qty": 5,
+              "item_code": "2hoyvar1sl",
+              "item_name": "Hoya kerrii 'Variegata' - Single Leaf",
+              "size": "2in"
+            },
+            {
+              "qty": 10,
+              "item_code": "2hypast",
+              "item_name": "Hypoestes assorted",
+              "size": "2in"
+            },
+            {
+              "qty": 5,
+              "item_code": "2oxaast",
+              "item_name": "Oxalis assorted",
+              "size": "2in"
+            },
+            {
+              "qty": 5,
+              "item_code": "2pephop",
+              "item_name": "Peperomia 'Hope'",
+              "size": "2in"
+            },
+            {
+              "qty": 2,
+              "item_code": "2phibur1",
+              "item_name": "Philodendron 'Burle Marx Variegata'",
+              "size": "2in"
+            },
+            {
+              "qty": 5,
+              "item_code": "2phipar",
+              "item_name": "Philodendron 'Paraiso Verde'",
+              "size": "2in"
+            },
+            {
+              "qty": 5,
+              "item_code": "2pilgla",
+              "item_name": "Pilea glauca Silver Sparkle",
+              "size": "2in"
+            },
+            {
+              "qty": 5,
+              "item_code": "2pilpep",
+              "item_name": "Pilea peperomioides",
+              "size": "2in"
+            },
+            {
+              "qty": 5,
+              "item_code": "2synmil",
+              "item_name": "Syngonium pod. 'Milk Confetti'",
+              "size": "2in"
+            },
+            {
+              "qty": 5,
+              "item_code": "2trajos",
+              "item_name": "Tradescantia 'Jose Puig'",
+              "size": "2in"
+            },
+            {
+              "qty": 2,
+              "item_code": "3sarast",
+              "item_name": "Sarracenia assorted",
+              "size": "3in"
+            },
+            {
+              "qty": 1,
+              "item_code": "4aeomed",
+              "item_name": "Aeonium 'Medusa'",
+              "size": "4in"
+            },
+            {
+              "qty": 1,
+              "item_code": "4aeopin",
+              "item_name": "Aeonium 'Pink Witch'",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4alofry1",
+              "item_name": "Alocasia 'Frydek Variegata'",
+              "size": "4in"
+            },
+            {
+              "qty": 3,
+              "item_code": "4alonin2",
+              "item_name": "Alocasia 'Ninja Tricolor'",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4alocup",
+              "item_name": "Alocasia cuprea Red Secret",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4alozeb",
+              "item_name": "Alocasia zebrina",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4calmus",
+              "item_name": "Calathea musaica",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4calpin1",
+              "item_name": "Callisia repens 'Pink Panther'",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4chlbon",
+              "item_name": "Chlorophytum comosum 'Bonnie'",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4clewin",
+              "item_name": "Cleistocactus winteri",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4colmoj",
+              "item_name": "Colocasia esc. 'Mojito'",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4crasun",
+              "item_name": "Crassula ovata 'Sunset'",
+              "size": "4in"
+            },
+            {
+              "qty": 10,
+              "item_code": "4echast",
+              "item_name": "Echeveria assorted",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4pacaqubr",
+              "item_name": "Pachira aquatica - braid",
+              "size": "4in"
+            },
+            {
+              "qty": 10,
+              "item_code": "4pepwat",
+              "item_name": "Peperomia argyreia Watermelon",
+              "size": "4in"
+            },
+            {
+              "qty": 1,
+              "item_code": "4phiman",
+              "item_name": "Philodendron domesticum 'Mango Shake'",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4pilpep",
+              "item_name": "Pilea peperomioides",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4sedbur",
+              "item_name": "Sedum morganianum 'Burrito'",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4zambla",
+              "item_name": "Zamioculcas zamiifolia 'Black Queen'",
+              "size": "4in"
+            },
+            {
+              "qty": 2,
+              "item_code": "5monlem",
+              "item_name": "Monstera del. 'Lemon Lime'",
+              "size": "5in"
+            },
+            {
+              "qty": 3,
+              "item_code": "5zamrav",
+              "item_name": "Zamioculcas zamiifolia 'Raven'",
+              "size": "5in"
+            },
+            {
+              "qty": 5,
+              "item_code": "6alodra",
+              "item_name": "Alocasia baginda 'Dragon Scale'",
+              "size": "6in"
+            },
+            {
+              "qty": 2,
+              "item_code": "6aphsqu",
+              "item_name": "Aphelandra squarrosa",
+              "size": "6in"
+            },
+            {
+              "qty": 1,
+              "item_code": "6bearecs",
+              "item_name": "Beaucarnea recurvata - stump",
+              "size": "6in"
+            },
+            {
+              "qty": 2,
+              "item_code": "6calorn",
+              "item_name": "Calathea ornata",
+              "size": "6in"
+            },
+            {
+              "qty": 3,
+              "item_code": "6chlbonhb",
+              "item_name": "Chlorophytum comosum 'Bonnie' - HB",
+              "size": "6in"
+            },
+            {
+              "qty": 1,
+              "item_code": "6craova1tr",
+              "item_name": "Crassula ovata obliqua variegata - Trunk",
+              "size": "6in"
+            },
+            {
+              "qty": 1,
+              "item_code": "6episnohb",
+              "item_name": "Epipremnum aur. 'Snow Queen' - HB",
+              "size": "6in"
+            },
+            {
+              "qty": 1,
+              "item_code": "6hoyroshb",
+              "item_name": "Hoya 'Rosita' - HB",
+              "size": "6in"
+            },
+            {
+              "qty": 1,
+              "item_code": "6hoykri1hb",
+              "item_name": "Hoya carnosa 'Krimson Queen' - HB",
+              "size": "6in"
+            },
+            {
+              "qty": 1,
+              "item_code": "6hoybel2hb",
+              "item_name": "Hoya lanceolata 'Bella Luis Bois' - HB",
+              "size": "6in"
+            },
+            {
+              "qty": 1,
+              "item_code": "6hoybelhb",
+              "item_name": "Hoya lanceolata 'Bella' - HB",
+              "size": "6in"
+            },
+            {
+              "qty": 6,
+              "item_code": "6marlemup",
+              "item_name": "Maranta leuc. 'Lemon Lime' - upright",
+              "size": "6in"
+            },
+            {
+              "qty": 4,
+              "item_code": "6monadaup",
+              "item_name": "Monstera adansonii - upright",
+              "size": "6in"
+            },
+            {
+              "qty": 1,
+              "item_code": "6mondel1p",
+              "item_name": "Monstera deliciosa 'Albo Variegata' - pole",
+              "size": "6in"
+            },
+            {
+              "qty": 1,
+              "item_code": "6phi696",
+              "item_name": "Philodendron '69686'",
+              "size": "6in"
+            },
+            {
+              "qty": 1,
+              "item_code": "6phiwhi1",
+              "item_name": "Philodendron 'White Princess'",
+              "size": "6in"
+            },
+            {
+              "qty": 2,
+              "item_code": "6pilpep",
+              "item_name": "Pilea peperomioides",
+              "size": "6in"
+            },
+            {
+              "qty": 1,
+              "item_code": "6sanmik",
+              "item_name": "Sansevieria bacularis 'Mikado'",
+              "size": "6in"
+            },
+            {
+              "qty": 4,
+              "item_code": "6santwi",
+              "item_name": "Sansevieria tri. 'Twisted Sister'",
+              "size": "6in"
+            },
+            {
+              "qty": 1,
+              "item_code": "6scipichb",
+              "item_name": "Scindapsus pictus - HB",
+              "size": "6in"
+            },
+            {
+              "qty": 5,
+              "item_code": "6sedburhb",
+              "item_name": "Sedum morganianum 'Burrito' - HB",
+              "size": "6in"
+            },
+            {
+              "qty": 2,
+              "item_code": "6strtri",
+              "item_name": "Stromanthe sanguinea 'Triostar'",
+              "size": "6in"
+            },
+            {
+              "qty": 1,
+              "item_code": "8begmac1",
+              "item_name": "Begonia maculata",
+              "size": "8in"
+            },
+            {
+              "qty": 1,
+              "item_code": "8ficretbn",
+              "item_name": "Ficus retusa - bonsai",
+              "size": "8in"
+            },
+            {
+              "qty": 4,
+              "item_code": "8nepmirhb",
+              "item_name": "Nepenthes 'Miranda' - HB",
+              "size": "8in"
+            },
+            {
+              "qty": 1,
+              "item_code": "8phibra1hb",
+              "item_name": "Philodendron heder. 'Brasil' - HB",
+              "size": "8in"
+            },
+            {
+              "qty": 1,
+              "item_code": "9epiaurhb",
+              "item_name": "Epipremnum aureum - HB",
+              "size": "9in"
+            }
+          ],
+          "unit_total": 244,
+          "subtotal": 2518.0,
+          "delivery_fee": 155.0,
+          "total": 2673.0
+        }
+      ],
+      "total_discrepancy_note": null,
+      "contact_emails": [
+        "wenatcheegreenthumb@gmail.com"
+      ],
+      "driver_state": {
+        "racks_unloaded": null,
+        "exceptions": [],
+        "signature_image": null,
+        "signed_at": null,
+        "status": "pending"
+      }
+    },
+    {
+      "stop_id": "T4-4",
+      "truck": "Truck 4",
+      "customer_name": "New Leaf Nursery",
+      "customer_code": "NEWL",
+      "cart_number": "N234",
+      "address": "12655 N Government Way, Hayden, ID 83835",
+      "delivery_region": "EWA",
+      "ship_state": "ID",
+      "payment_terms": "NNBA",
+      "delivery_instructions": "Open 9am-5pm. IN COLD WEATHER: deliver directly to north entry to barn rather than the white building in the south end of the property. Call Kathy 619.988.5500.",
+      "order_notes": "Please be sure to hold that 1 6\" hanging string of pearls and the 2\" monstera albo; both are special orders. Thank you!",
+      "racks_expected": 1,
+      "orders": [
+        {
+          "order_number": "112380",
+          "invoice_number": "112782",
+          "line_items": [
+            {
+              "qty": 1,
+              "item_code": "mister1",
+              "item_name": "Mister",
+              "size": "Multi"
+            },
+            {
+              "qty": 1,
+              "item_code": "2monalb",
+              "item_name": "Monstera deliciosa var. borsigiana 'Albo'",
+              "size": "2in"
+            },
+            {
+              "qty": 1,
+              "item_code": "3oncoro",
+              "item_name": "Oncidium Twinkle 'Oro'",
+              "size": "3in"
+            },
+            {
+              "qty": 3,
+              "item_code": "4calmak",
+              "item_name": "Calathea makoyana",
+              "size": "4in"
+            },
+            {
+              "qty": 1,
+              "item_code": "4oncint",
+              "item_name": "Oncidium intergeneric",
+              "size": "4in"
+            },
+            {
+              "qty": 1,
+              "item_code": "4peppro",
+              "item_name": "Peperomia prostrata",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4phibra1",
+              "item_name": "Philodendron heder. 'Brasil'",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4sanwhi",
+              "item_name": "Sansevieria tri. 'Whitney'",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4senrow1",
+              "item_name": "Senecio rowleyanus variegata",
+              "size": "4in"
+            },
+            {
+              "qty": 1,
+              "item_code": "5monwhi",
+              "item_name": "Monstera deliciosa 'White Monster'",
+              "size": "5in"
+            },
+            {
+              "qty": 3,
+              "item_code": "6aesblahb",
+              "item_name": "Aeschynanthus long. 'Black Pagoda' - HB",
+              "size": "6in"
+            },
+            {
+              "qty": 3,
+              "item_code": "6aesrashb",
+              "item_name": "Aeschynanthus rad. 'Rasta' - HB",
+              "size": "6in"
+            },
+            {
+              "qty": 3,
+              "item_code": "6alolon",
+              "item_name": "Alocasia longiloba",
+              "size": "6in"
+            },
+            {
+              "qty": 3,
+              "item_code": "6antand2",
+              "item_name": "Anthurium Flowering - Orange",
+              "size": "6in"
+            },
+            {
+              "qty": 1,
+              "item_code": "6pepprohb",
+              "item_name": "Peperomia prostrata - HB",
+              "size": "6in"
+            },
+            {
+              "qty": 1,
+              "item_code": "6phiped",
+              "item_name": "Philodendron pedatum",
+              "size": "6in"
+            },
+            {
+              "qty": 3,
+              "item_code": "6plabifhb",
+              "item_name": "Platycerium bifurcatum - HB",
+              "size": "6in"
+            },
+            {
+              "qty": 3,
+              "item_code": "6sanmoo",
+              "item_name": "Sansevieria tri. 'Moonshine'",
+              "size": "6in"
+            },
+            {
+              "qty": 3,
+              "item_code": "6santwi",
+              "item_name": "Sansevieria tri. 'Twisted Sister'",
+              "size": "6in"
+            },
+            {
+              "qty": 3,
+              "item_code": "6scisil1",
+              "item_name": "Scindapsus pict. 'Silvery Ann'",
+              "size": "6in"
+            },
+            {
+              "qty": 3,
+              "item_code": "6senrowhb",
+              "item_name": "Senecio rowleyanus - HB",
+              "size": "6in"
+            },
+            {
+              "qty": 3,
+              "item_code": "6zamzam",
+              "item_name": "Zamioculcas zamiifolia",
+              "size": "6in"
+            },
+            {
+              "qty": 1,
+              "item_code": "8callan",
+              "item_name": "Calathea lancifolia",
+              "size": "8in"
+            },
+            {
+              "qty": 1,
+              "item_code": "8sanzey",
+              "item_name": "Sansevieria zeylanica",
+              "size": "8in"
+            },
+            {
+              "qty": 1,
+              "item_code": "8zamosc",
+              "item_name": "Zamioculcas zamiifolia 'Oscura'",
+              "size": "8in"
+            }
+          ],
+          "unit_total": 59,
+          "subtotal": 775.92,
+          "delivery_fee": 200.0,
+          "total": 975.92
+        }
+      ],
+      "total_discrepancy_note": null,
+      "contact_emails": [
+        "kw@newleafnurseryhayden.com"
+      ],
+      "driver_state": {
+        "racks_unloaded": null,
+        "exceptions": [],
+        "signature_image": null,
+        "signed_at": null,
+        "status": "pending"
+      }
+    },
+    {
+      "stop_id": "T5-1",
+      "truck": "Truck 5",
+      "customer_name": "Sunnyside Nursery",
+      "customer_code": "SUNY",
+      "cart_number": "S045",
+      "address": "3915 Sunnyside Blvd, Marysville, WA 98270",
+      "delivery_region": "EAS",
+      "ship_state": "WA",
+      "payment_terms": "NNBA (per delivery note; ERP shows per-order values, not one combined terms field)",
+      "delivery_instructions": "Open 9am-5pm, prefer Wednesday afternoons. No delivery before 9am, no staff to receive.",
+      "racks_expected": 3,
+      "orders": [
+        {
+          "order_number": "112571",
+          "racks": 1,
+          "unit_total": 52,
+          "value": 390.74,
+          "delivery_fee": 65.0
+        },
+        {
+          "order_number": "112527",
+          "racks": 1,
+          "unit_total": 128,
+          "value": 1053.36,
+          "delivery_fee": 65.0
+        },
+        {
+          "order_number": "112509",
+          "racks": 1,
+          "unit_total": 71,
+          "value": 766.08,
+          "delivery_fee": 65.0
+        }
+      ],
+      "invoice_number": "112967",
+      "line_items_combined": [
+        {
+          "qty": 1,
+          "item_code": "10beagua",
+          "item_name": "Beaucarnea guatemalensis",
+          "size": "10in"
+        },
+        {
+          "qty": 1,
+          "item_code": "10euprub",
+          "item_name": "Euphorbia trigona 'Rubra'",
+          "size": "10in"
+        },
+        {
+          "qty": 1,
+          "item_code": "14ficalisd",
+          "item_name": "Ficus mac. 'Alii' - standard",
+          "size": "14in"
+        },
+        {
+          "qty": 20,
+          "item_code": "2aloast20",
+          "item_name": "Alocasia assorted - 20 per flat",
+          "size": "2in"
+        },
+        {
+          "qty": 1,
+          "item_code": "2antkin",
+          "item_name": "Anthurium 'King Of Spades'",
+          "size": "2in"
+        },
+        {
+          "qty": 10,
+          "item_code": "2cacast",
+          "item_name": "Cactus assorted",
+          "size": "2in"
+        },
+        {
+          "qty": 10,
+          "item_code": "2crabud",
+          "item_name": "Crassula pyramidalis 'Buddha's Temple'",
+          "size": "2in"
+        },
+        {
+          "qty": 10,
+          "item_code": "2drasan1cp",
+          "item_name": "Dracaena sanderiana - ceramic pot",
+          "size": "2in"
+        },
+        {
+          "qty": 10,
+          "item_code": "2kalblo",
+          "item_name": "Kalanchoe blossfeldiana",
+          "size": "2in"
+        },
+        {
+          "qty": 10,
+          "item_code": "2pilgla",
+          "item_name": "Pilea glauca Silver Sparkle",
+          "size": "2in"
+        },
+        {
+          "qty": 5,
+          "item_code": "2strdye",
+          "item_name": "Strobilanthes dyerianus",
+          "size": "2in"
+        },
+        {
+          "qty": 5,
+          "item_code": "3monpol",
+          "item_name": "Monanthes polyphylla",
+          "size": "3in"
+        },
+        {
+          "qty": 1,
+          "item_code": "3oncoro",
+          "item_name": "Oncidium Twinkle 'Oro'",
+          "size": "3in"
+        },
+        {
+          "qty": 5,
+          "item_code": "4alobam",
+          "item_name": "Alocasia amazonica 'Bambino'",
+          "size": "4in"
+        },
+        {
+          "qty": 5,
+          "item_code": "4aphsqu",
+          "item_name": "Aphelandra squarrosa",
+          "size": "4in"
+        },
+        {
+          "qty": 5,
+          "item_code": "4brarup1",
+          "item_name": "Brachychiton rupestris hybrid",
+          "size": "4in"
+        },
+        {
+          "qty": 5,
+          "item_code": "4cacast",
+          "item_name": "Cactus assorted",
+          "size": "4in"
+        },
+        {
+          "qty": 5,
+          "item_code": "4calorn",
+          "item_name": "Calathea ornata",
+          "size": "4in"
+        },
+        {
+          "qty": 5,
+          "item_code": "4chaele",
+          "item_name": "Chamaedorea elegans",
+          "size": "4in"
+        },
+        {
+          "qty": 5,
+          "item_code": "4chlhaw",
+          "item_name": "Chlorophytum comosum 'Hawaiian'",
+          "size": "4in"
+        },
+        {
+          "qty": 5,
+          "item_code": "4clewin",
+          "item_name": "Cleistocactus winteri",
+          "size": "4in"
+        },
+        {
+          "qty": 5,
+          "item_code": "4congol",
+          "item_name": "Coniogramme emeiensis 'Golden Zebra'",
+          "size": "4in"
+        },
+        {
+          "qty": 5,
+          "item_code": "4crasun",
+          "item_name": "Crassula ovata 'Sunset'",
+          "size": "4in"
+        },
+        {
+          "qty": 10,
+          "item_code": "4epineo",
+          "item_name": "Epipremnum aur. 'Neon'",
+          "size": "4in"
+        },
+        {
+          "qty": 5,
+          "item_code": "4epiaur",
+          "item_name": "Epipremnum aureum",
+          "size": "4in"
+        },
+        {
+          "qty": 5,
+          "item_code": "4ficpum1",
+          "item_name": "Ficus pumila var. quercifolia",
+          "size": "4in"
+        },
+        {
+          "qty": 5,
+          "item_code": "4hydpap",
+          "item_name": "Hydnophytum papuanum",
+          "size": "4in"
+        },
+        {
+          "qty": 5,
+          "item_code": "4mimpud",
+          "item_name": "Mimosa pudica",
+          "size": "4in"
+        },
+        {
+          "qty": 1,
+          "item_code": "4oncsha",
+          "item_name": "Oncidium 'Sharry Baby'",
+          "size": "4in"
+        },
+        {
+          "qty": 5,
+          "item_code": "4opuvar",
+          "item_name": "Opuntia cochenillifera 'Variegata'",
+          "size": "4in"
+        },
+        {
+          "qty": 5,
+          "item_code": "4pepdep",
+          "item_name": "Peperomia deppeana",
+          "size": "4in"
+        },
+        {
+          "qty": 4,
+          "item_code": "4peppro",
+          "item_name": "Peperomia prostrata",
+          "size": "4in"
+        },
+        {
+          "qty": 5,
+          "item_code": "4sansil2",
+          "item_name": "Sansevieria kirkii 'Silver Blue'",
+          "size": "4in"
+        },
+        {
+          "qty": 5,
+          "item_code": "4spadom",
+          "item_name": "Spathiphyllum 'Domino'",
+          "size": "4in"
+        },
+        {
+          "qty": 5,
+          "item_code": "4trazeb",
+          "item_name": "Tradescantia zebrina Purple",
+          "size": "4in"
+        },
+        {
+          "qty": 3,
+          "item_code": "5sanmik",
+          "item_name": "Sansevieria bacularis 'Mikado'",
+          "size": "5in"
+        },
+        {
+          "qty": 3,
+          "item_code": "6aesrashb",
+          "item_name": "Aeschynanthus rad. 'Rasta' - HB",
+          "size": "6in"
+        },
+        {
+          "qty": 3,
+          "item_code": "6aphsqu",
+          "item_name": "Aphelandra squarrosa",
+          "size": "6in"
+        },
+        {
+          "qty": 3,
+          "item_code": "6aspsethb",
+          "item_name": "Asparagus setaceus - HB",
+          "size": "6in"
+        },
+        {
+          "qty": 3,
+          "item_code": "6aspdim",
+          "item_name": "Asplenium dimorphum x difforme",
+          "size": "6in"
+        },
+        {
+          "qty": 3,
+          "item_code": "6bearecs",
+          "item_name": "Beaucarnea recurvata - stump",
+          "size": "6in"
+        },
+        {
+          "qty": 3,
+          "item_code": "6calwar",
+          "item_name": "Calathea warscewiczii",
+          "size": "6in"
+        },
+        {
+          "qty": 3,
+          "item_code": "6chlora",
+          "item_name": "Chlorophytum am. 'Orange Mandarin'",
+          "size": "6in"
+        },
+        {
+          "qty": 1,
+          "item_code": "6cracrotr",
+          "item_name": "Crassula ovata 'Crosby's Compact' - verde Trunk",
+          "size": "6in"
+        },
+        {
+          "qty": 2,
+          "item_code": "6craova1tr",
+          "item_name": "Crassula ovata obliqua variegata - Trunk",
+          "size": "6in"
+        },
+        {
+          "qty": 3,
+          "item_code": "6hibrosp",
+          "item_name": "Hibiscus rosa-sinensis - premium",
+          "size": "6in"
+        },
+        {
+          "qty": 3,
+          "item_code": "6hoycomhb",
+          "item_name": "Hoya carnosa 'Compacta' - HB",
+          "size": "6in"
+        },
+        {
+          "qty": 3,
+          "item_code": "6hoykerhb",
+          "item_name": "Hoya kerrii - HB",
+          "size": "6in"
+        },
+        {
+          "qty": 3,
+          "item_code": "6hoylinhb",
+          "item_name": "Hoya linearis - HB",
+          "size": "6in"
+        },
+        {
+          "qty": 3,
+          "item_code": "6jassam",
+          "item_name": "Jasminum sambac",
+          "size": "6in"
+        },
+        {
+          "qty": 3,
+          "item_code": "6nemgrehb",
+          "item_name": "Nematanthus gregarius - HB",
+          "size": "6in"
+        },
+        {
+          "qty": 3,
+          "item_code": "6opuvar",
+          "item_name": "Opuntia cochenillifera 'Variegata'",
+          "size": "6in"
+        },
+        {
+          "qty": 3,
+          "item_code": "6santwi",
+          "item_name": "Sansevieria tri. 'Twisted Sister'",
+          "size": "6in"
+        },
+        {
+          "qty": 1,
+          "item_code": "8aloreg",
+          "item_name": "Alocasia 'Regal Shield'",
+          "size": "8in"
+        },
+        {
+          "qty": 1,
+          "item_code": "8chacat",
+          "item_name": "Chamaedorea cataractarum",
+          "size": "8in"
+        },
+        {
+          "qty": 1,
+          "item_code": "8chaele",
+          "item_name": "Chamaedorea elegans",
+          "size": "8in"
+        },
+        {
+          "qty": 1,
+          "item_code": "8crasuntr",
+          "item_name": "Crassula ovata 'Sunset' - Trunk",
+          "size": "8in"
+        },
+        {
+          "qty": 1,
+          "item_code": "8micdivhb",
+          "item_name": "Microsorum diversifolium - HB",
+          "size": "8in"
+        }
+      ],
+      "unit_total": 251,
+      "printed_subtotal_on_pdf": 390.74,
+      "true_subtotal": 2210.18,
+      "delivery_fee": 65.0,
+      "true_total": 2275.18,
+      "total_discrepancy_note": "PDF prints Subtotal $390.74 (= order 112571 only). Line items and the 251-unit total on the PDF ARE the combined 3 orders. True dollar total = sum of the 3 ERP order values ($390.74+$1053.36+$766.08=$2210.18) + $65 delivery = $2275.18. Verify with office before trusting either PDF or ERP alone.",
+      "contact_emails": [
+        "sunnysidenursery@msn.com"
+      ],
+      "driver_state": {
+        "racks_unloaded": null,
+        "exceptions": [],
+        "signature_image": null,
+        "signed_at": null,
+        "status": "pending"
+      }
+    },
+    {
+      "stop_id": "T5-2",
+      "truck": "Truck 5",
+      "customer_name": "Swanson's Nursery",
+      "customer_code": "SWAN",
+      "cart_number": "S048",
+      "address": "9701 15th Ave NW, Seattle, WA 98117",
+      "delivery_region": "SEA",
+      "ship_state": "WA",
+      "payment_terms": "Net 30",
+      "delivery_instructions": "Prefer deliveries Tuesday after 9am.",
+      "order_notes": "DELIVER 9/23, deliver 9/23 (on order 112128)",
+      "racks_expected": 8,
+      "orders": [
+        {
+          "order_number": "112521",
+          "racks": 2,
+          "unit_total": 104,
+          "value": 1151.77,
+          "delivery_fee": 65.0,
+          "line_items": [
+            {
+              "qty": 0,
+              "item_code": "10bearecs",
+              "item_name": "Beaucarnea recurvata - stump",
+              "size": "10in"
+            },
+            {
+              "qty": 8,
+              "item_code": "10chasei",
+              "item_name": "Chamaedorea seifrizii",
+              "size": "10in"
+            },
+            {
+              "qty": 16,
+              "item_code": "10cinver",
+              "item_name": "Cinnamomum verum",
+              "size": "10in"
+            },
+            {
+              "qty": 6,
+              "item_code": "10citmey",
+              "item_name": "Citrus x meyeri",
+              "size": "10in"
+            },
+            {
+              "qty": 3,
+              "item_code": "10dracolcn",
+              "item_name": "Dracaena marg. 'Colorama' - Cane",
+              "size": "10in"
+            },
+            {
+              "qty": 4,
+              "item_code": "10howfor",
+              "item_name": "Howea forsteriana",
+              "size": "10in"
+            },
+            {
+              "qty": 1,
+              "item_code": "12drader1",
+              "item_name": "Dracaena deremensis compacta",
+              "size": "12in"
+            },
+            {
+              "qty": 1,
+              "item_code": "12echpac",
+              "item_name": "Echinopsis pachanoi",
+              "size": "12in"
+            },
+            {
+              "qty": 1,
+              "item_code": "14cinver",
+              "item_name": "Cinnamomum verum",
+              "size": "14in"
+            },
+            {
+              "qty": 1,
+              "item_code": "14ficbensd",
+              "item_name": "Ficus beng. Audrey - standard",
+              "size": "14in"
+            },
+            {
+              "qty": 1,
+              "item_code": "14ficlyrsd",
+              "item_name": "Ficus lyrata - standard",
+              "size": "14in"
+            },
+            {
+              "qty": 1,
+              "item_code": "14ficalisd",
+              "item_name": "Ficus mac. 'Alii' - standard",
+              "size": "14in"
+            },
+            {
+              "qty": 1,
+              "item_code": "14ficmocsd",
+              "item_name": "Ficus micro. 'Moclame' - standard",
+              "size": "14in"
+            },
+            {
+              "qty": 20,
+              "item_code": "2fitwhi",
+              "item_name": "Fittonia 'White Tiger'",
+              "size": "2in"
+            },
+            {
+              "qty": 20,
+              "item_code": "4fitpur",
+              "item_name": "Fittonia 'Purple Snow Anne'",
+              "size": "4in"
+            },
+            {
+              "qty": 10,
+              "item_code": "4fitred1",
+              "item_name": "Fittonia 'Red Flame'",
+              "size": "4in"
+            },
+            {
+              "qty": 10,
+              "item_code": "4tilcya",
+              "item_name": "Tillandsia cyanea",
+              "size": "4in"
+            },
+            {
+              "qty": 15,
+              "item_code": "4trapin2",
+              "item_name": "Tradescantia zebrina 'Pink Paradise'",
+              "size": "4in"
+            },
+            {
+              "qty": 10,
+              "item_code": "4zamdar",
+              "item_name": "Zamioculcas zamiifolia 'Dark Zamicro'",
+              "size": "4in"
+            },
+            {
+              "qty": 9,
+              "item_code": "8dramagcn",
+              "item_name": "Dracaena marg. 'Magenta' - cane",
+              "size": "8in"
+            },
+            {
+              "qty": 3,
+              "item_code": "8echpac",
+              "item_name": "Echinopsis pachanoi",
+              "size": "8in"
+            },
+            {
+              "qty": 12,
+              "item_code": "8ficbensd",
+              "item_name": "Ficus beng. Audrey - standard",
+              "size": "8in"
+            },
+            {
+              "qty": 12,
+              "item_code": "8ficbamsd",
+              "item_name": "Ficus lyrata comp. 'Bambino' - standard",
+              "size": "8in"
+            },
+            {
+              "qty": 12,
+              "item_code": "8ficmocbr",
+              "item_name": "Ficus micro. 'Moclame' - braid",
+              "size": "8in"
+            },
+            {
+              "qty": 3,
+              "item_code": "8ficretbo",
+              "item_name": "Ficus retusa - bonsai s-shape",
+              "size": "8in"
+            },
+            {
+              "qty": 6,
+              "item_code": "9dramiccn",
+              "item_name": "Dracaena der. 'Michiko' - cane",
+              "size": "9in"
+            },
+            {
+              "qty": 6,
+              "item_code": "9draliscn4",
+              "item_name": "Dracaena frag. 'Lisa' - cane 4ft",
+              "size": "9in"
+            }
+          ]
+        },
+        {
+          "order_number": "112128",
+          "racks": 6,
+          "unit_total": 88,
+          "value": 3970.04,
+          "delivery_fee": 65.0,
+          "line_items": "NOT IN INVOICES.PDF - this order's line items were not on the Delivery Note pages read; office needs to confirm source before hour-1 close"
+        }
+      ],
+      "invoice_number": "112918",
+      "unit_total": 192,
+      "printed_subtotal_on_pdf": 1151.77,
+      "true_subtotal": 5121.81,
+      "delivery_fee": 65.0,
+      "true_total": 5186.81,
+      "total_discrepancy_note": "PDF (Inv 112918) prints Subtotal $1,151.77, matching ONLY order 112521. Its line items total 192 units, matching the PDF's 192-unit total, but 112128's $3,970.04 / 6 racks are not reflected in the PDF's line items or totals at all -- this stop likely has a second delivery note not captured in the pages read, or 112128 ships differently. Flagging for office confirmation rather than guessing.",
+      "contact_emails": [
+        "mollie@swansonsnursery.com"
+      ],
+      "driver_state": {
+        "racks_unloaded": null,
+        "exceptions": [],
+        "signature_image": null,
+        "signed_at": null,
+        "status": "pending"
+      }
+    },
+    {
+      "stop_id": "T5-3",
+      "truck": "Truck 5",
+      "customer_name": "Whit and Co",
+      "customer_code": "DOWN",
+      "cart_number": "W008",
+      "address": "8096 Railroad Ave, Snoqualmie, WA 98065",
+      "delivery_region": "SAM",
+      "ship_state": "WA",
+      "payment_terms": "Due on receipt",
+      "delivery_instructions": "Open 9am-5pm but can take earlier. Go to back - will look like gate is closed but it's open.",
+      "order_notes": "Wednesday would be amazing! Thank you!",
+      "racks_expected": 1,
+      "orders": [
+        {
+          "order_number": "112517",
+          "invoice_number": "112914",
+          "line_items": [
+            {
+              "qty": 1,
+              "item_code": "10cinver",
+              "item_name": "Cinnamomum verum",
+              "size": "10in"
+            },
+            {
+              "qty": 1,
+              "item_code": "10ficbamb",
+              "item_name": "Ficus lyrata comp. 'Bambino' - bush",
+              "size": "10in"
+            },
+            {
+              "qty": 10,
+              "item_code": "2begmac2",
+              "item_name": "Begonia maculata Silver Spot",
+              "size": "2in"
+            },
+            {
+              "qty": 20,
+              "item_code": "2ferast20",
+              "item_name": "Fern assorted - 20 per flat",
+              "size": "2in"
+            },
+            {
+              "qty": 20,
+              "item_code": "2fitast20",
+              "item_name": "Fittonia assorted Premium - 20 per flat",
+              "size": "2in"
+            },
+            {
+              "qty": 10,
+              "item_code": "2hoyvar1sl",
+              "item_name": "Hoya kerrii 'Variegata' - Single Leaf",
+              "size": "2in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4begmac1",
+              "item_name": "Begonia maculata",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4begmac2",
+              "item_name": "Begonia maculata Silver Spot",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4caldot",
+              "item_name": "Calathea roseopicta 'Dottie'",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4calrep",
+              "item_name": "Callisia repens",
+              "size": "4in"
+            },
+            {
+              "qty": 10,
+              "item_code": "4ferast10",
+              "item_name": "Fern assorted - 10 per flat",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4fitmis",
+              "item_name": "Fittonia 'Mistral'",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4fitpur",
+              "item_name": "Fittonia 'Purple Snow Anne'",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4hawmia",
+              "item_name": "Haworthia wandera 'Miami'",
+              "size": "4in"
+            },
+            {
+              "qty": 3,
+              "item_code": "5cryabs",
+              "item_name": "Cryptanthus 'Absolute Zero'",
+              "size": "5in"
+            },
+            {
+              "qty": 3,
+              "item_code": "6epigrehb",
+              "item_name": "Epipremnum aur. 'Green Queen' - HB",
+              "size": "6in"
+            },
+            {
+              "qty": 3,
+              "item_code": "6hoykri1hb",
+              "item_name": "Hoya carnosa 'Krimson Queen' - HB",
+              "size": "6in"
+            },
+            {
+              "qty": 1,
+              "item_code": "6hoylinhb",
+              "item_name": "Hoya linearis - HB",
+              "size": "6in"
+            },
+            {
+              "qty": 3,
+              "item_code": "6senrowhb",
+              "item_name": "Senecio rowleyanus - HB",
+              "size": "6in"
+            },
+            {
+              "qty": 3,
+              "item_code": "6zamzam",
+              "item_name": "Zamioculcas zamiifolia",
+              "size": "6in"
+            }
+          ],
+          "unit_total": 123,
+          "subtotal": 787.5,
+          "delivery_fee": 70.0,
+          "total": 857.5
+        }
+      ],
+      "total_discrepancy_note": null,
+      "contact_emails": [
+        "hello@shopwhitandco.com"
+      ],
+      "driver_state": {
+        "racks_unloaded": null,
+        "exceptions": [],
+        "signature_image": null,
+        "signed_at": null,
+        "status": "pending"
+      }
+    },
+    {
+      "stop_id": "T5-4",
+      "truck": "Truck 5",
+      "customer_name": "West Seattle Nursery & Garden Center",
+      "customer_code": "WESE",
+      "cart_number": "W005",
+      "address": "5275 California Ave SW, Seattle, WA 98136",
+      "delivery_region": "SEA",
+      "ship_state": "WA",
+      "payment_terms": "Net 30",
+      "delivery_instructions": "MUST deliver Wednesday 9am-11am. If delivering second delivery on Tuesday/Friday, must arrive before 1pm - need to communicate.",
+      "racks_expected": 5,
+      "orders": [
+        {
+          "order_number": "112512",
+          "racks": 1,
+          "unit_total": 1,
+          "value": 111.86,
+          "delivery_fee": 65.0
+        },
+        {
+          "order_number": "112511",
+          "racks": 1,
+          "unit_total": 10,
+          "value": 71.3,
+          "delivery_fee": 65.0
+        },
+        {
+          "order_number": "112510",
+          "racks": 2,
+          "unit_total": 151,
+          "value": 2191.11,
+          "delivery_fee": 65.0,
+          "order_notes": "Thanks!"
+        },
+        {
+          "order_number": "112350",
+          "racks": 1,
+          "unit_total": 5,
+          "value": 29.7,
+          "delivery_fee": 65.0
+        }
+      ],
+      "invoice_number": "112909",
+      "line_items_combined": [
+        {
+          "qty": 1,
+          "item_code": "10begmac1",
+          "item_name": "Begonia maculata",
+          "size": "10in"
+        },
+        {
+          "qty": 1,
+          "item_code": "10cinver",
+          "item_name": "Cinnamomum verum",
+          "size": "10in"
+        },
+        {
+          "qty": 1,
+          "item_code": "10dracolcn",
+          "item_name": "Dracaena marg. 'Colorama' - Cane",
+          "size": "10in"
+        },
+        {
+          "qty": 1,
+          "item_code": "10ficbensd",
+          "item_name": "Ficus beng. Audrey - standard",
+          "size": "10in"
+        },
+        {
+          "qty": 1,
+          "item_code": "10fictinb",
+          "item_name": "Ficus elastica 'Tineke' - Bush",
+          "size": "10in"
+        },
+        {
+          "qty": 1,
+          "item_code": "10schgolb",
+          "item_name": "Schefflera arboricola 'Gold Capella' - bush",
+          "size": "10in"
+        },
+        {
+          "qty": 1,
+          "item_code": "14arahet",
+          "item_name": "Araucaria heterophylla",
+          "size": "14in"
+        },
+        {
+          "qty": 1,
+          "item_code": "2adeobe",
+          "item_name": "Adenium obesum",
+          "size": "2in"
+        },
+        {
+          "qty": 1,
+          "item_code": "3papven",
+          "item_name": "Paphiopedilum venustum",
+          "size": "3in"
+        },
+        {
+          "qty": 1,
+          "item_code": "3tubkot",
+          "item_name": "Tuberolabium kotoense",
+          "size": "3in"
+        },
+        {
+          "qty": 5,
+          "item_code": "4aspset",
+          "item_name": "Asparagus setaceus",
+          "size": "4in"
+        },
+        {
+          "qty": 5,
+          "item_code": "4bearecs",
+          "item_name": "Beaucarnea recurvata - stump",
+          "size": "4in"
+        },
+        {
+          "qty": 1,
+          "item_code": "4begvar",
+          "item_name": "Begonia cucullata 'Variegated'",
+          "size": "4in"
+        },
+        {
+          "qty": 5,
+          "item_code": "4bredis",
+          "item_name": "Breynia disticha",
+          "size": "4in"
+        },
+        {
+          "qty": 5,
+          "item_code": "4epibal",
+          "item_name": "Epipremnum pinnatum 'Baltic Blue'",
+          "size": "4in"
+        },
+        {
+          "qty": 5,
+          "item_code": "4eupvar1",
+          "item_name": "Euphorbia milii 'Variegata'",
+          "size": "4in"
+        },
+        {
+          "qty": 1,
+          "item_code": "4ficvar2",
+          "item_name": "Ficus lyrata 'Variegated'",
+          "size": "4in"
+        },
+        {
+          "qty": 10,
+          "item_code": "4ginbil",
+          "item_name": "Ginkgo biloba",
+          "size": "4in"
+        },
+        {
+          "qty": 5,
+          "item_code": "4hydpap",
+          "item_name": "Hydnophytum papuanum",
+          "size": "4in"
+        },
+        {
+          "qty": 5,
+          "item_code": "4pepinc",
+          "item_name": "Peperomia incana",
+          "size": "4in"
+        },
+        {
+          "qty": 5,
+          "item_code": "4phimic",
+          "item_name": "Philodendron micans",
+          "size": "4in"
+        },
+        {
+          "qty": 5,
+          "item_code": "4phisca",
+          "item_name": "Philodendron scandens variegatum",
+          "size": "4in"
+        },
+        {
+          "qty": 5,
+          "item_code": "4psepal",
+          "item_name": "Pseudobombax palmeri",
+          "size": "4in"
+        },
+        {
+          "qty": 5,
+          "item_code": "4strtri",
+          "item_name": "Stromanthe sanguinea 'Triostar'",
+          "size": "4in"
+        },
+        {
+          "qty": 2,
+          "item_code": "4zygast",
+          "item_name": "Zygopetalum assorted",
+          "size": "4in"
+        },
+        {
+          "qty": 3,
+          "item_code": "6aloama",
+          "item_name": "Alocasia amazonica Polly",
+          "size": "6in"
+        },
+        {
+          "qty": 3,
+          "item_code": "6aphsqu",
+          "item_name": "Aphelandra squarrosa",
+          "size": "6in"
+        },
+        {
+          "qty": 3,
+          "item_code": "6calwar",
+          "item_name": "Calathea warscewiczii",
+          "size": "6in"
+        },
+        {
+          "qty": 3,
+          "item_code": "6calpin1hb",
+          "item_name": "Callisia repens 'Pink Panther' - HB",
+          "size": "6in"
+        },
+        {
+          "qty": 3,
+          "item_code": "6chlhawhb",
+          "item_name": "Chlorophytum comosum 'Hawaiian' - HB",
+          "size": "6in"
+        },
+        {
+          "qty": 3,
+          "item_code": "6diepan",
+          "item_name": "Dieffenbachia 'Panther'",
+          "size": "6in"
+        },
+        {
+          "qty": 3,
+          "item_code": "6dravar",
+          "item_name": "Dracaena reflexa 'Variegata'",
+          "size": "6in"
+        },
+        {
+          "qty": 3,
+          "item_code": "6epineohb",
+          "item_name": "Epipremnum aur. 'Neon' - HB",
+          "size": "6in"
+        },
+        {
+          "qty": 3,
+          "item_code": "6ficben3b",
+          "item_name": "Ficus benjamina variegata - bush",
+          "size": "6in"
+        },
+        {
+          "qty": 3,
+          "item_code": "6ficumb",
+          "item_name": "Ficus umbellata",
+          "size": "6in"
+        },
+        {
+          "qty": 1,
+          "item_code": "6hoyroshb",
+          "item_name": "Hoya 'Rosita' - HB",
+          "size": "6in"
+        },
+        {
+          "qty": 3,
+          "item_code": "6hoykerhb",
+          "item_name": "Hoya kerrii - HB",
+          "size": "6in"
+        },
+        {
+          "qty": 3,
+          "item_code": "6jassam",
+          "item_name": "Jasminum sambac",
+          "size": "6in"
+        },
+        {
+          "qty": 6,
+          "item_code": "6mondel",
+          "item_name": "Monstera deliciosa",
+          "size": "6in"
+        },
+        {
+          "qty": 3,
+          "item_code": "6nepjeshb",
+          "item_name": "Nephrolepis ob. 'Jester's Crown' - HB",
+          "size": "6in"
+        },
+        {
+          "qty": 3,
+          "item_code": "6pacaqubr",
+          "item_name": "Pachira aquatica - braid",
+          "size": "6in"
+        },
+        {
+          "qty": 3,
+          "item_code": "6phibir",
+          "item_name": "Philodendron 'Birkin'",
+          "size": "6in"
+        },
+        {
+          "qty": 3,
+          "item_code": "6phibra1hb",
+          "item_name": "Philodendron heder. 'Brasil' - HB",
+          "size": "6in"
+        },
+        {
+          "qty": 3,
+          "item_code": "6phlaurhb",
+          "item_name": "Phlebodium aureum - HB",
+          "size": "6in"
+        },
+        {
+          "qty": 3,
+          "item_code": "6pilpep",
+          "item_name": "Pilea peperomioides",
+          "size": "6in"
+        },
+        {
+          "qty": 3,
+          "item_code": "6sanzey",
+          "item_name": "Sansevieria zeylanica",
+          "size": "6in"
+        },
+        {
+          "qty": 3,
+          "item_code": "6senvarhb",
+          "item_name": "Senecio macroglossus 'Variegatus' - HB",
+          "size": "6in"
+        },
+        {
+          "qty": 3,
+          "item_code": "6solpyr",
+          "item_name": "Solanum pyracanthos",
+          "size": "6in"
+        },
+        {
+          "qty": 3,
+          "item_code": "6strtri",
+          "item_name": "Stromanthe sanguinea 'Triostar'",
+          "size": "6in"
+        },
+        {
+          "qty": 3,
+          "item_code": "6trazebhb",
+          "item_name": "Tradescantia zebrina Purple - HB",
+          "size": "6in"
+        },
+        {
+          "qty": 1,
+          "item_code": "8aloreg",
+          "item_name": "Alocasia 'Regal Shield'",
+          "size": "8in"
+        },
+        {
+          "qty": 2,
+          "item_code": "8aspela",
+          "item_name": "Aspidistra elatior",
+          "size": "8in"
+        },
+        {
+          "qty": 1,
+          "item_code": "8echpac",
+          "item_name": "Echinopsis pachanoi",
+          "size": "8in"
+        },
+        {
+          "qty": 1,
+          "item_code": "8ficbensd",
+          "item_name": "Ficus beng. Audrey - standard",
+          "size": "8in"
+        },
+        {
+          "qty": 1,
+          "item_code": "8micdivhb",
+          "item_name": "Microsorum diversifolium - HB",
+          "size": "8in"
+        },
+        {
+          "qty": 2,
+          "item_code": "8mondel",
+          "item_name": "Monstera deliciosa",
+          "size": "8in"
+        },
+        {
+          "qty": 2,
+          "item_code": "8pacaqubr",
+          "item_name": "Pachira aquatica - braid",
+          "size": "8in"
+        },
+        {
+          "qty": 1,
+          "item_code": "8philic",
+          "item_name": "Philodendron 'Lickety Split'",
+          "size": "8in"
+        },
+        {
+          "qty": 1,
+          "item_code": "8sanbla2",
+          "item_name": "Sansevieria tri. 'Black Coral'",
+          "size": "8in"
+        }
+      ],
+      "unit_total": 167,
+      "printed_subtotal_on_pdf": 111.86,
+      "true_subtotal": 2403.97,
+      "delivery_fee": 65.0,
+      "true_total": 2468.97,
+      "total_discrepancy_note": "Same pattern as Sunnyside: PDF prints Subtotal $111.86 (= order 112512 only). Line items and the 167-unit total ARE the combined 4 orders. True dollar total = sum of the 4 ERP order values ($111.86+$71.30+$2191.11+$29.70=$2403.97) + $65 delivery = $2468.97.",
+      "contact_emails": [],
+      "email_gap_note": "No contact for West Seattle Nursery & Garden Center is flagged Delivery Note = Y in Staff Export (5 contacts, all N). Office needs to pick who should receive the signed PDF, or this stop's email step gets skipped for the test.",
+      "driver_state": {
+        "racks_unloaded": null,
+        "exceptions": [],
+        "signature_image": null,
+        "signed_at": null,
+        "status": "pending"
+      }
+    },
+    {
+      "stop_id": "T5-5",
+      "truck": "Truck 5",
+      "customer_name": "Sky Nursery",
+      "customer_code": "SKY",
+      "cart_number": "S025",
+      "address": "18528 Aurora Ave N, Shoreline, WA 98133",
+      "delivery_region": "SEA",
+      "ship_state": "WA",
+      "payment_terms": "Net 30",
+      "delivery_instructions": "Open 9am-4pm, Wednesdays after 9am.",
+      "order_notes": "Hello, Here's the start to our order for next week, delivery on Wednesday. I'll make some additions on Sunday or Monday. Thanks! -Kate, Sky Nursery",
+      "racks_expected": 1,
+      "orders": [
+        {
+          "order_number": "112445",
+          "invoice_number": "112842",
+          "line_items": [
+            {
+              "qty": 1,
+              "item_code": "10chacat",
+              "item_name": "Chamaedorea cataractarum",
+              "size": "10in"
+            },
+            {
+              "qty": 5,
+              "item_code": "2strast",
+              "item_name": "Streptocarpus assorted",
+              "size": "2in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4calwhi1",
+              "item_name": "Calathea 'White Fusion'",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4calvit",
+              "item_name": "Calathea elliptica 'Vittata'",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4calorn",
+              "item_name": "Calathea ornata",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4chlhaw",
+              "item_name": "Chlorophytum comosum 'Hawaiian'",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4epigre",
+              "item_name": "Epipremnum aur. 'Green Queen'",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4mictha",
+              "item_name": "Microsorum thailandicum",
+              "size": "4in"
+            },
+            {
+              "qty": 10,
+              "item_code": "4mimpud",
+              "item_name": "Mimosa pudica",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4phipin5",
+              "item_name": "Philodendron 'Pink Bikini'",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4selunc",
+              "item_name": "Selaginella uncinata",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4spadom",
+              "item_name": "Spathiphyllum 'Domino'",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4strast",
+              "item_name": "Streptocarpus assorted",
+              "size": "4in"
+            },
+            {
+              "qty": 3,
+              "item_code": "6bearecs",
+              "item_name": "Beaucarnea recurvata - stump",
+              "size": "6in"
+            },
+            {
+              "qty": 3,
+              "item_code": "6calwhi1",
+              "item_name": "Calathea 'White Fusion'",
+              "size": "6in"
+            },
+            {
+              "qty": 3,
+              "item_code": "6chaele",
+              "item_name": "Chamaedorea elegans",
+              "size": "6in"
+            },
+            {
+              "qty": 9,
+              "item_code": "6jassam",
+              "item_name": "Jasminum sambac",
+              "size": "6in"
+            },
+            {
+              "qty": 2,
+              "item_code": "8chacat",
+              "item_name": "Chamaedorea cataractarum",
+              "size": "8in"
+            },
+            {
+              "qty": 2,
+              "item_code": "8chaele",
+              "item_name": "Chamaedorea elegans",
+              "size": "8in"
+            }
+          ],
+          "unit_total": 88,
+          "subtotal": 891.25,
+          "delivery_fee": 65.0,
+          "total": 956.25
+        }
+      ],
+      "total_discrepancy_note": null,
+      "contact_emails": [
+        "ap@skynursery.com",
+        "houseplants@skynursery.com"
+      ],
+      "driver_state": {
+        "racks_unloaded": null,
+        "exceptions": [],
+        "signature_image": null,
+        "signed_at": null,
+        "status": "pending"
+      }
+    },
+    {
+      "stop_id": "T5-6",
+      "truck": "Truck 5",
+      "customer_name": "Squak Mt. Nursery",
+      "customer_code": "SQUA",
+      "cart_number": "S035",
+      "address": "7600 Renton Issaquah Rd SE, Issaquah, WA 98027",
+      "delivery_region": "SAM",
+      "ship_state": "WA",
+      "payment_terms": "NNBA",
+      "delivery_instructions": "Open 9am-4pm. Deliver between 7am-1pm on Friday. Contact Kurt Jones 206-817-2504.",
+      "racks_expected": 1,
+      "orders": [
+        {
+          "order_number": "112406",
+          "invoice_number": "112803",
+          "line_items": [
+            {
+              "qty": 1,
+              "item_code": "10ficbamb",
+              "item_name": "Ficus lyrata comp. 'Bambino' - bush",
+              "size": "10in"
+            },
+            {
+              "qty": 2,
+              "item_code": "10zamzam",
+              "item_name": "Zamioculcas zamiifolia",
+              "size": "10in"
+            },
+            {
+              "qty": 10,
+              "item_code": "2ferast1",
+              "item_name": "Ferns & Foliage assorted",
+              "size": "2in"
+            },
+            {
+              "qty": 10,
+              "item_code": "2oxaast",
+              "item_name": "Oxalis assorted",
+              "size": "2in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4alobam",
+              "item_name": "Alocasia amazonica 'Bambino'",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4monada",
+              "item_name": "Monstera adansonii",
+              "size": "4in"
+            },
+            {
+              "qty": 2,
+              "item_code": "4monsta1",
+              "item_name": "Monstera standleyana Aurea",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4pilgla",
+              "item_name": "Pilea glauca Silver Sparkle",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4sancle",
+              "item_name": "Sansevieria 'Cleopatra'",
+              "size": "4in"
+            },
+            {
+              "qty": 10,
+              "item_code": "4sanast2",
+              "item_name": "Sansevieria assorted - 10 per flat",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4sanzey",
+              "item_name": "Sansevieria zeylanica",
+              "size": "4in"
+            },
+            {
+              "qty": 5,
+              "item_code": "4spaastfl",
+              "item_name": "Spathiphyllum - Flowering",
+              "size": "4in"
+            },
+            {
+              "qty": 3,
+              "item_code": "6aglspr",
+              "item_name": "Aglaonema 'Spring Snow'",
+              "size": "6in"
+            },
+            {
+              "qty": 1,
+              "item_code": "8aglsia",
+              "item_name": "Aglaonema 'Siam'",
+              "size": "8in"
+            },
+            {
+              "qty": 2,
+              "item_code": "8santri",
+              "item_name": "Sansevieria tri. var. laurentii",
+              "size": "8in"
+            },
+            {
+              "qty": 1,
+              "item_code": "8spaast",
+              "item_name": "Spathiphyllum",
+              "size": "8in"
+            }
+          ],
+          "unit_total": 72,
+          "subtotal": 658.3,
+          "delivery_fee": 70.0,
+          "total": 728.3
+        }
+      ],
+      "total_discrepancy_note": null,
+      "contact_emails": [
+        "matt@squakmtnursery.com"
+      ],
+      "driver_state": {
+        "racks_unloaded": null,
+        "exceptions": [],
+        "signature_image": null,
+        "signed_at": null,
+        "status": "pending"
+      }
+    }
+  ]
+}

@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="CT Delivery">
+<title>CT Delivery App</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="queue-banner hidden" id="queue-banner"></div>
+
+<!-- LOGIN -->
+<section class="screen active" id="screen-login">
+  <header class="app-bar"><h1>Cascade Tropicals — Delivery</h1></header>
+  <main>
+    <div class="login-box">
+      <h2>Driver Login</h2>
+      <p class="hint" id="login-date"></p>
+      <div class="truck-select" id="truck-select">
+        <button data-truck="Truck 4">Truck 4</button>
+        <button data-truck="Truck 5">Truck 5</button>
+      </div>
+      <input class="pin-input" id="pin-input" type="tel" inputmode="numeric" maxlength="4" placeholder="PIN">
+      <button class="primary" id="login-btn" disabled>Start Route</button>
+      <div class="error-msg" id="login-error"></div>
+    </div>
+  </main>
+</section>
+
+<!-- ROUTE LIST -->
+<section class="screen" id="screen-route">
+  <header class="app-bar">
+    <div>
+      <h1 id="route-truck-title">Truck</h1>
+      <div class="sub" id="route-date-sub"></div>
+    </div>
+    <button class="back" id="logout-btn">Log out</button>
+  </header>
+  <main id="route-list"></main>
+</section>
+
+<!-- STOP DETAIL -->
+<section class="screen" id="screen-stop">
+  <header class="app-bar">
+    <div>
+      <h1 id="stop-name">Customer</h1>
+      <div class="sub" id="stop-meta"></div>
+    </div>
+    <button class="back" id="stop-back-btn">&larr; Stops</button>
+  </header>
+  <main>
+    <div class="section-title">Invoice</div>
+    <table class="line-items-table" id="line-items-table"></table>
+
+    <div class="section-title">Racks</div>
+    <div class="racks-row">
+      <div class="expected">Expected: <strong id="racks-expected-label">-</strong></div>
+      <input type="number" id="racks-unloaded-input" min="0" placeholder="0">
+      <span>unloaded</span>
+    </div>
+
+    <div id="stop-warnings"></div>
+  </main>
+  <div class="bottom-bar">
+    <button class="primary" id="to-exceptions-btn" disabled>Next: Check for Exceptions</button>
+  </div>
+</section>
+
+<!-- EXCEPTIONS -->
+<section class="screen" id="screen-exceptions">
+  <header class="app-bar">
+    <div><h1>Exceptions</h1><div class="sub" id="exceptions-stop-name"></div></div>
+    <button class="back" id="exceptions-back-btn">&larr; Back</button>
+  </header>
+  <main>
+    <p class="hint">Tap "Flag" on any line that was rejected or short. Everything else is assumed delivered as invoiced.</p>
+    <div id="item-pick-list"></div>
+    <div id="exception-forms"></div>
+  </main>
+  <div class="bottom-bar">
+    <button class="primary" id="to-signature-btn">Next: Signature</button>
+  </div>
+</section>
+
+<!-- SIGNATURE -->
+<section class="screen" id="screen-signature">
+  <header class="app-bar">
+    <div><h1>Signature</h1><div class="sub" id="signature-stop-name"></div></div>
+    <button class="back" id="signature-back-btn">&larr; Back</button>
+  </header>
+  <main>
+    <p class="hint">Have the customer sign below, or skip if they're not available to sign digitally.</p>
+    <canvas id="sig-pad"></canvas>
+    <button class="secondary" id="clear-sig-btn">Clear</button>
+  </main>
+  <div class="bottom-bar">
+    <button class="primary" id="submit-btn">Submit Delivery</button>
+    <button class="secondary" id="skip-sig-btn">Submit Without Signature</button>
+  </div>
+</section>
+
+<div class="toast" id="toast"></div>
+
+<script src="app.js"></script>
+</body>
+</html>

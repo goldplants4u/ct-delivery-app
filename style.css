@@ -1,0 +1,107 @@
+/* CT Delivery App — minimal styling, tuned for iPad in a truck cab: big tap targets, high contrast, no hover-dependent UI. */
+
+* { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: #f4f4f2;
+  color: #1a1a1a;
+  font-size: 18px;
+}
+
+.screen { display: none; min-height: 100vh; flex-direction: column; }
+.screen.active { display: flex; }
+
+header.app-bar {
+  background: #2f5233;
+  color: #fff;
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+header.app-bar h1 { font-size: 20px; margin: 0; font-weight: 600; }
+header.app-bar .sub { font-size: 14px; opacity: 0.85; margin-top: 2px; }
+header.app-bar button.back {
+  background: none; border: none; color: #fff; font-size: 17px; padding: 8px 4px; cursor: pointer;
+}
+
+main { flex: 1; padding: 20px; overflow-y: auto; }
+
+.login-box { max-width: 380px; margin: 60px auto; text-align: center; }
+.login-box h2 { margin-bottom: 4px; }
+.login-box p.hint { color: #666; margin-top: 0; }
+.truck-select { display: flex; gap: 12px; justify-content: center; margin: 20px 0; }
+.truck-select button {
+  flex: 1; padding: 16px; font-size: 18px; border: 2px solid #2f5233; border-radius: 10px;
+  background: #fff; color: #2f5233; cursor: pointer; font-weight: 600;
+}
+.truck-select button.selected { background: #2f5233; color: #fff; }
+input.pin-input {
+  width: 100%; font-size: 28px; letter-spacing: 8px; text-align: center; padding: 14px;
+  border: 2px solid #ccc; border-radius: 10px; margin: 16px 0;
+}
+button.primary {
+  width: 100%; padding: 16px; font-size: 18px; font-weight: 600; border: none; border-radius: 10px;
+  background: #2f5233; color: #fff; cursor: pointer;
+}
+button.primary:disabled { background: #aab; cursor: default; opacity: 0.6; }
+button.secondary {
+  width: 100%; padding: 14px; font-size: 16px; font-weight: 600; border: 2px solid #999; border-radius: 10px;
+  background: #fff; color: #444; cursor: pointer; margin-top: 10px;
+}
+.error-msg { color: #b3261e; margin-top: 10px; font-size: 15px; }
+
+.stop-card {
+  background: #fff; border-radius: 12px; padding: 16px 18px; margin-bottom: 14px;
+  border-left: 8px solid #999; display: flex; justify-content: space-between; align-items: center;
+  cursor: pointer;
+}
+.stop-card.pending { border-left-color: #d9a520; }
+.stop-card.done-clean { border-left-color: #2f8f4e; }
+.stop-card.done-exceptions { border-left-color: #b3261e; }
+.stop-card .name { font-weight: 700; font-size: 19px; }
+.stop-card .meta { color: #555; font-size: 14px; margin-top: 4px; }
+.stop-card .status-pill {
+  font-size: 12px; font-weight: 700; padding: 6px 10px; border-radius: 999px; text-transform: uppercase;
+  background: #eee; color: #555;
+}
+.stop-card.done-clean .status-pill { background: #dcf3e3; color: #1f6b39; }
+.stop-card.done-exceptions .status-pill { background: #fbdedb; color: #8f221a; }
+
+.queue-banner {
+  background: #fff4cc; color: #7a5b00; padding: 10px 16px; font-size: 14px; text-align: center;
+}
+.queue-banner.hidden { display: none; }
+
+.line-items-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 15px; }
+.line-items-table th, .line-items-table td { text-align: left; padding: 8px 6px; border-bottom: 1px solid #e2e2e2; }
+.line-items-table th { color: #666; font-size: 13px; text-transform: uppercase; }
+
+.section-title { font-size: 15px; text-transform: uppercase; color: #666; margin: 20px 0 8px; font-weight: 700; }
+
+.racks-row { display: flex; align-items: center; gap: 16px; background: #fff; padding: 16px; border-radius: 12px; }
+.racks-row .expected { font-size: 16px; color: #444; }
+.racks-row input[type=number] {
+  width: 90px; font-size: 24px; text-align: center; padding: 10px; border: 2px solid #ccc; border-radius: 8px;
+}
+
+.exception-row { background: #fff; border-radius: 10px; padding: 12px; margin-bottom: 10px; }
+.exception-row select, .exception-row input, .exception-row textarea {
+  width: 100%; padding: 8px; font-size: 15px; border: 1px solid #ccc; border-radius: 6px; margin-top: 6px;
+}
+.item-pick-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 4px; border-bottom: 1px solid #eee; }
+.item-pick-row button.flag { border: 2px solid #b3261e; color: #b3261e; background: #fff; border-radius: 8px; padding: 6px 10px; font-size: 13px; cursor: pointer; }
+.item-pick-row button.flag.active { background: #b3261e; color: #fff; }
+
+canvas#sig-pad { width: 100%; height: 220px; background: #fff; border: 2px dashed #999; border-radius: 10px; touch-action: none; }
+
+.bottom-bar { padding: 16px 20px; background: #fff; border-top: 1px solid #ddd; }
+
+.toast {
+  position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+  background: #1a1a1a; color: #fff; padding: 12px 20px; border-radius: 10px; font-size: 15px; opacity: 0;
+  transition: opacity 0.25s; pointer-events: none;
+}
+.toast.show { opacity: 1; }
