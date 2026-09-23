@@ -2,19 +2,25 @@
  * CT Delivery App — frontend logic (Hours 3-6 of the 8-hour build plan)
  *
  * Screens: login -> route list -> stop detail -> exceptions -> signature -> (back to route list)
- * Data: manifest_2026-09-23.json + pins.json, both static files shipped alongside this page
- *       (see Code.gs and PROJECT-NOTES.md for why the manifest is a static file, not a Sheet read).
+ * Data: the manifest (route/stops/line items/totals) is fetched live from the Apps Script
+ *       backend (APPS_SCRIPT_URL + "?action=get_manifest") — NOT a static file bundled with
+ *       this page. That's a deliberate change from the original design: publishing a new day
+ *       used to mean uploading a new manifest.json to GitHub every single day, which is exactly
+ *       what this was changed to avoid. Office publishes from the Sheet menu ("Publish Manifest
+ *       from Draft...") and the app picks it up on the driver's next login — no GitHub involved.
+ *       See Code.gs's getManifestForRequest_ and PROJECT-NOTES.md.
+ *       pins.json (truck PINs) is still a plain static file — those essentially never change.
  *
  * ====================================================================
  * SETUP STEP YOU STILL NEED TO DO: paste your Apps Script /exec URL
  * below (from Extensions > Apps Script > Deploy > Web app, after
  * pasting in Code.gs). Until this is a real URL, submits will fail
- * and queue offline (which is safe, but nothing reaches the Sheet).
+ * and queue offline (which is safe, but nothing reaches the Sheet) —
+ * and the manifest fetch below will fail too, since it uses this same URL.
  * ====================================================================
  */
 const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbydrIdUUOPO617n9eaXuiKYKjbfK4GaeAezsWVF9JQSMjARFiEyrVXFQlQMAfnrQcmn_Q/exec";
 
-const MANIFEST_FILE = "manifest_2026-09-23.json";
 const PINS_FILE = "pins.json";
 const STORAGE_KEY_STATE = "ct_driver_state_v1";
 const STORAGE_KEY_QUEUE = "ct_offline_queue_v1";
@@ -43,10 +49,22 @@ async function init() {
 
   try {
     const [manifestRes, pinsRes] = await Promise.all([
-      fetch(MANIFEST_FILE, { cache: "no-store" }),
+      fetch(APPS_SCRIPT_URL + "?action=get_manifest", { cache: "no-store" }),
       fetch(PINS_FILE, { cache: "no-store" }),
     ]);
-    manifest = await manifestRes.json();
+    const manifestJson = await manifestRes.json();
+    // The backend returns the manifest object directly on success, or
+    // {ok:false, error:"..."} when nothing's been published yet for today
+    // (or the published one is for a different date) — see
+    // getManifestForRequest_ in Code.gs. Surface that message plainly
+    // rather than a generic "check your connection", since this failure
+    // usually means the office forgot to publish, not a network problem.
+    if (manifestJson && manifestJson.ok === false) {
+      showToast(manifestJson.error || "No manifest published for today yet.");
+      console.error("manifest fetch returned an error", manifestJson);
+      return;
+    }
+    manifest = manifestJson;
     pins = await pinsRes.json();
     applyStoredDriverState_();
   } catch (err) {
@@ -226,6 +244,7 @@ function openStopScreen_(stop) {
     // to signature again shouldn't wipe a signature already captured).
     clearSignaturePad_();
     clearRackPhoto_();
+    clearSkipReason_();
   }
 
   document.getElementById("stop-name").textContent = stop.customer_name;
@@ -611,6 +630,11 @@ function clearRackPhoto_() {
   renderRackPhotoPreview_();
 }
 
+function clearSkipReason_() {
+  const select = document.getElementById("skip-sig-reason-select");
+  if (select) select.value = "";
+}
+
 function renderRackPhotoPreview_() {
   const img = document.getElementById("rack-photo-preview");
   const takeBtn = document.getElementById("take-photo-btn");
@@ -669,6 +693,21 @@ let isSubmitting = false; // guards against a double-tap firing two submits for 
 
 async function submitStop_(wantsSignature) {
   if (!currentStop || isSubmitting) return;
+
+  const hasSignature = wantsSignature && sigPad.hasStroke;
+  const signatureImage = hasSignature ? document.getElementById("sig-pad").toDataURL("image/png") : null;
+
+  // A signature is only truly "captured" when something was actually drawn
+  // (hasSignature above already accounts for tapping "Submit Delivery" with
+  // nothing drawn, not just the explicit "Submit Without Signature" button).
+  // Either way, require a reason rather than silently logging a blank skip.
+  const skipReasonSelect = document.getElementById("skip-sig-reason-select");
+  const skipReason = skipReasonSelect ? skipReasonSelect.value : "";
+  if (!hasSignature && !skipReason) {
+    showToast("Pick a reason for the missing signature before submitting.");
+    return;
+  }
+
   isSubmitting = true;
   document.getElementById("submit-btn").disabled = true;
   document.getElementById("skip-sig-btn").disabled = true;
@@ -681,8 +720,6 @@ async function submitStop_(wantsSignature) {
     qty_change: ex.qty_change,
     notes: ex.notes,
   }));
-  const hasSignature = wantsSignature && sigPad.hasStroke;
-  const signatureImage = hasSignature ? document.getElementById("sig-pad").toDataURL("image/png") : null;
 
   // Everything below racks_unloaded is extra context so the backend (Hour 7)
   // can build a proof-of-delivery PDF without a second lookup — the backend
@@ -715,6 +752,7 @@ async function submitStop_(wantsSignature) {
     exceptions: exceptions,
     signature_captured: hasSignature,
     signature_image: signatureImage,
+    signature_skipped_reason: hasSignature ? "" : skipReason,
     rack_photo_image: rackPhotoDataUrl,
     contact_emails: currentStop.contact_emails || [],
     submitted_at_iso: new Date().toISOString(),
@@ -725,6 +763,7 @@ async function submitStop_(wantsSignature) {
     racks_unloaded: racksUnloaded,
     exceptions: exceptions,
     signature_image: signatureImage,
+    signature_skipped_reason: payload.signature_skipped_reason,
     rack_photo_image: rackPhotoDataUrl,
     signed_at: payload.submitted_at_iso,
     status: newStatus,

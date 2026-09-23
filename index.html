@@ -105,6 +105,16 @@
     <p class="hint">Have the customer sign below, or skip if they're not available to sign digitally.</p>
     <canvas id="sig-pad"></canvas>
     <button class="secondary" id="clear-sig-btn">Clear</button>
+
+    <div class="skip-reason-box">
+      <label class="hint" for="skip-sig-reason-select">If submitting without a signature, pick why:</label>
+      <select id="skip-sig-reason-select">
+        <option value="" selected>Select a reason&hellip;</option>
+        <option value="Customer not available">Customer not available</option>
+        <option value="Customer declined to sign">Customer declined to sign</option>
+        <option value="Other">Other</option>
+      </select>
+    </div>
   </main>
   <div class="bottom-bar">
     <button class="primary" id="submit-btn">Submit Delivery</button>
