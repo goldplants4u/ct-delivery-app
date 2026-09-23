@@ -33,11 +33,11 @@
 <!-- ROUTE LIST -->
 <section class="screen" id="screen-route">
   <header class="app-bar">
-    <div>
+    <div class="title-wrap">
       <h1 id="route-truck-title">Truck</h1>
       <div class="sub" id="route-date-sub"></div>
     </div>
-    <button class="back" id="logout-btn">Log out</button>
+    <button class="logout-btn" id="logout-btn">Log out</button>
   </header>
   <main id="route-list"></main>
 </section>
@@ -45,11 +45,11 @@
 <!-- STOP DETAIL -->
 <section class="screen" id="screen-stop">
   <header class="app-bar">
-    <div>
+    <button class="back" id="stop-back-btn">&larr; Stops</button>
+    <div class="title-wrap">
       <h1 id="stop-name">Customer</h1>
       <div class="sub" id="stop-meta"></div>
     </div>
-    <button class="back" id="stop-back-btn">&larr; Stops</button>
   </header>
   <main>
     <div class="section-title">Invoice</div>
@@ -72,8 +72,8 @@
 <!-- EXCEPTIONS -->
 <section class="screen" id="screen-exceptions">
   <header class="app-bar">
-    <div><h1>Exceptions</h1><div class="sub" id="exceptions-stop-name"></div></div>
     <button class="back" id="exceptions-back-btn">&larr; Back</button>
+    <div class="title-wrap"><h1>Exceptions</h1><div class="sub" id="exceptions-stop-name"></div></div>
   </header>
   <main>
     <p class="hint">Tap "Flag" on any line that was rejected or short. Everything else is assumed delivered as invoiced.</p>
@@ -88,8 +88,8 @@
 <!-- SIGNATURE -->
 <section class="screen" id="screen-signature">
   <header class="app-bar">
-    <div><h1>Signature</h1><div class="sub" id="signature-stop-name"></div></div>
     <button class="back" id="signature-back-btn">&larr; Back</button>
+    <div class="title-wrap"><h1>Signature</h1><div class="sub" id="signature-stop-name"></div></div>
   </header>
   <main>
     <div class="section-title">Photo of Delivered Rack (optional)</div>

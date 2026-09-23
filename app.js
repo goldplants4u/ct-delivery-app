@@ -284,10 +284,6 @@ function getLineItems_(stop) {
   return items;
 }
 
-function getMissingLineItemOrders_(stop) {
-  return (stop.orders || []).filter((o) => typeof o.line_items === "string");
-}
-
 function getStopTotal_(stop) {
   if (stop.true_total != null) return stop.true_total;
   if (stop.orders && stop.orders.length === 1 && stop.orders[0].total != null) return stop.orders[0].total;
@@ -316,38 +312,48 @@ function renderLineItemsTable_(stop) {
   table.innerHTML = "";
 
   const thead = document.createElement("tr");
-  ["Qty", "Item", "Size"].forEach((h) => {
+  ["Qty", "Item"].forEach((h) => {
     const th = document.createElement("th");
     th.textContent = h;
     thead.appendChild(th);
   });
   table.appendChild(thead);
 
+  // Item name and size are rendered in the same cell, size right after the
+  // name, so there's no wide auto-layout gap between them (was a separate
+  // "Size" column pinned to the far right of a 100%-wide table).
   items.forEach((item) => {
     const row = document.createElement("tr");
     const tdQty = document.createElement("td");
     tdQty.textContent = item.qty;
     const tdName = document.createElement("td");
-    tdName.textContent = item.item_name + (item.item_code ? " (" + item.item_code + ")" : "");
-    const tdSize = document.createElement("td");
-    tdSize.textContent = item.size || "";
+    tdName.appendChild(
+      document.createTextNode(item.item_name + (item.item_code ? " (" + item.item_code + ")" : ""))
+    );
+    if (item.size) {
+      const sizeSpan = document.createElement("span");
+      sizeSpan.className = "item-size-inline";
+      sizeSpan.textContent = "  — " + item.size;
+      tdName.appendChild(sizeSpan);
+    }
     row.appendChild(tdQty);
     row.appendChild(tdName);
-    row.appendChild(tdSize);
     table.appendChild(row);
   });
 
   const total = getStopTotal_(stop);
   if (total != null) {
     const totalRow = document.createElement("tr");
-    const tdLabel = document.createElement("td");
-    tdLabel.colSpan = 2;
-    tdLabel.style.fontWeight = "700";
-    tdLabel.textContent = "Total";
+    const tdBlank = document.createElement("td");
     const tdVal = document.createElement("td");
-    tdVal.style.fontWeight = "700";
-    tdVal.textContent = "$" + total.toFixed(2);
-    totalRow.appendChild(tdLabel);
+    tdVal.className = "total-cell";
+    const labelSpan = document.createElement("span");
+    labelSpan.textContent = "Total";
+    const valSpan = document.createElement("span");
+    valSpan.textContent = "$" + total.toFixed(2);
+    tdVal.appendChild(labelSpan);
+    tdVal.appendChild(valSpan);
+    totalRow.appendChild(tdBlank);
     totalRow.appendChild(tdVal);
     table.appendChild(totalRow);
   }
@@ -360,18 +366,10 @@ function renderStopWarnings_(stop) {
   box.innerHTML = "";
   const warnings = [];
 
-  if (stop.total_discrepancy_note) {
-    warnings.push("Billing note (office to confirm): " + stop.total_discrepancy_note);
-  }
-  const missingOrders = getMissingLineItemOrders_(stop);
-  if (missingOrders.length > 0) {
-    missingOrders.forEach((o) => {
-      warnings.push("Order " + o.order_number + " — line items not available on this device (" + o.line_items + ").");
-    });
-  }
-  if (stop.email_gap_note) {
-    warnings.push(stop.email_gap_note);
-  }
+  // total_discrepancy_note / missing-line-items / email_gap_note are
+  // internal office-side data-quality flags (surfaced to office in the
+  // Manifest Draft tab's review_notes column) — never shown to the driver,
+  // who can't act on them anyway. Only driver-actionable warnings below.
   if (stop.delivery_instructions) {
     warnings.push("Delivery instructions: " + stop.delivery_instructions);
   }
