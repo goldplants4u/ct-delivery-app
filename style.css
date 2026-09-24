@@ -101,11 +101,15 @@ button.secondary {
 
 .hidden { display: none; }
 
-.line-items-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 15px; }
-.line-items-table th, .line-items-table td { text-align: left; padding: 10px 6px; border-bottom: 1px solid #e2e2e2; vertical-align: top; }
+.print-pdf-row { margin-bottom: 4px; }
+.print-pdf-row .secondary { width: 100%; }
+
+.line-items-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 15px; table-layout: fixed; }
+.line-items-table th, .line-items-table td { text-align: left; padding: 10px 6px; border-bottom: 1px solid #e2e2e2; vertical-align: top; word-break: break-word; }
 .line-items-table th { color: #666; font-size: 12px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.03em; }
-.line-items-table th:first-child, .line-items-table td:first-child { width: 48px; font-weight: 600; }
-.item-size-inline { color: #777; font-weight: 400; }
+.line-items-table th:first-child, .line-items-table td:first-child { width: 44px; font-weight: 600; }
+.line-items-table th:last-child, .line-items-table td:last-child { width: 64px; text-align: right; }
+.line-items-table td.item-size-col { color: #777; text-align: right; }
 .line-items-table td.total-cell { display: flex; justify-content: space-between; font-weight: 700; border-bottom: none; padding-top: 14px; }
 
 .section-title { font-size: 15px; text-transform: uppercase; color: #666; margin: 20px 0 8px; font-weight: 700; }

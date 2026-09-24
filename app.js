@@ -328,6 +328,16 @@ function wireStopScreen() {
     currentStop._racksUnloadedEntered = Number(document.getElementById("racks-unloaded-input").value);
     openExceptionsScreen_(currentStop);
   });
+
+  document.getElementById("print-pdf-btn").addEventListener("click", () => {
+    const fileId = currentStop && currentStop.driver_state && currentStop.driver_state.pdf_file_id;
+    if (!fileId) return;
+    // Opens the backend's own ?action=get_pdf endpoint (see servePdfForPrint_
+    // in Code.gs) — never the raw Drive link — so this works with no Google
+    // login on the iPad. Safari opens a PDF in its built-in viewer, whose
+    // Share icon includes Print (AirPrint) — no extra print code needed here.
+    window.open(APPS_SCRIPT_URL + "?action=get_pdf&file_id=" + encodeURIComponent(fileId), "_blank");
+  });
 }
 
 function openStopScreen_(stop) {
@@ -357,6 +367,9 @@ function openStopScreen_(stop) {
     " · " + (stop.payment_terms || "");
 
   renderLineItemsTable_(stop);
+
+  const pdfFileId = stop.driver_state && stop.driver_state.pdf_file_id;
+  document.getElementById("print-pdf-row").classList.toggle("hidden", !pdfFileId);
 
   document.getElementById("racks-expected-label").textContent = stop.racks_expected != null ? stop.racks_expected : "-";
   const racksInput = document.getElementById("racks-unloaded-input");
@@ -408,46 +421,52 @@ function getStopDeliveryFee_(stop) {
   return null;
 }
 
+// Qty / Item / Size as three real columns (was Qty/Item with size crammed
+// into the same cell as an inline "— 6in" suffix, which read as one run-on
+// line per item — hard to scan quickly at a customer's door). Size gets its
+// own right-aligned column so it lines up down the page instead of trailing
+// off at a different spot on every row depending on the item name's length.
+// The internal item code (e.g. "10beagua") is dropped from the driver view
+// entirely — it's an office/GrowFlo matching detail, not something a driver
+// acts on (see the "office-side data-quality flags" note in
+// renderStopWarnings_ just below for the same driver-vs-office principle).
 function renderLineItemsTable_(stop) {
   const items = getLineItems_(stop);
   const table = document.getElementById("line-items-table");
   table.innerHTML = "";
 
   const thead = document.createElement("tr");
-  ["Qty", "Item"].forEach((h) => {
+  ["Qty", "Item", "Size"].forEach((h) => {
     const th = document.createElement("th");
     th.textContent = h;
     thead.appendChild(th);
   });
   table.appendChild(thead);
 
-  // Item name and size are rendered in the same cell, size right after the
-  // name, so there's no wide auto-layout gap between them (was a separate
-  // "Size" column pinned to the far right of a 100%-wide table).
   items.forEach((item) => {
     const row = document.createElement("tr");
     const tdQty = document.createElement("td");
     tdQty.textContent = item.qty;
     const tdName = document.createElement("td");
-    tdName.appendChild(
-      document.createTextNode(item.item_name + (item.item_code ? " (" + item.item_code + ")" : ""))
-    );
-    if (item.size) {
-      const sizeSpan = document.createElement("span");
-      sizeSpan.className = "item-size-inline";
-      sizeSpan.textContent = "  — " + item.size;
-      tdName.appendChild(sizeSpan);
-    }
+    tdName.textContent = item.item_name;
+    const tdSize = document.createElement("td");
+    tdSize.className = "item-size-col";
+    tdSize.textContent = item.size || "";
     row.appendChild(tdQty);
     row.appendChild(tdName);
+    row.appendChild(tdSize);
     table.appendChild(row);
   });
 
   const total = getStopTotal_(stop);
   if (total != null) {
     const totalRow = document.createElement("tr");
+    // Blank cell under Qty only, total-cell spans Item + Size (colspan 2)
+    // so the flex label/value pair below has room to spread out — the
+    // Size column alone (64px) is too narrow for "Total   $220.00".
     const tdBlank = document.createElement("td");
     const tdVal = document.createElement("td");
+    tdVal.colSpan = 2;
     tdVal.className = "total-cell";
     const labelSpan = document.createElement("span");
     labelSpan.textContent = "Total";
@@ -870,8 +889,17 @@ async function submitStop_(wantsSignature) {
   });
   applyStoredDriverState_();
 
-  const sentOk = await sendToBackend_(payload);
-  if (sentOk) {
+  const stopIdForThisSubmit = currentStop.stop_id;
+  const result = await sendToBackend_(payload);
+  if (result) {
+    // pdf_file_id lets the driver reopen this stop later and print the
+    // delivery PDF (see print-pdf-btn) — merged in on top of the state
+    // just saved above, not saveDriverStateLocal_ again, since that call
+    // overwrites the whole per-stop record rather than patching it.
+    if (result.pdf_file_id) {
+      mergeDriverStateLocal_(stopIdForThisSubmit, { pdf_file_id: result.pdf_file_id });
+      applyStoredDriverState_();
+    }
     showToast("Delivery submitted — " + currentStop.customer_name);
   } else {
     queueOffline_(payload);
@@ -885,9 +913,16 @@ async function submitStop_(wantsSignature) {
   showScreen_("screen-route");
 }
 
+// Returns the backend's parsed response object on a genuine success
+// (data.ok === true — carries pdf_file_id, used to let a driver print the
+// delivery PDF later), or null on anything else (not configured, network
+// failure, timeout, non-ok HTTP status, or the backend's own ok:false).
+// Was a bare boolean before pdf_file_id needed to make it back to the
+// caller too — callers just need `if (result)` where they used to check
+// the boolean.
 async function sendToBackend_(payload) {
   if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.indexOf("PASTE_YOUR") === 0) {
-    return false; // not configured yet — treat as offline so nothing is silently lost
+    return null; // not configured yet — treat as offline so nothing is silently lost
   }
   try {
     const controller = new AbortController();
@@ -901,12 +936,12 @@ async function sendToBackend_(payload) {
       signal: controller.signal,
     });
     clearTimeout(timeout);
-    if (!res.ok) return false;
+    if (!res.ok) return null;
     const data = await res.json();
-    return !!data.ok;
+    return data.ok ? data : null;
   } catch (err) {
     console.warn("submit failed, will queue offline", err);
-    return false;
+    return null;
   }
 }
 
@@ -944,11 +979,23 @@ async function flushOfflineQueue_() {
   if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.indexOf("PASTE_YOUR") === 0) return;
 
   const remaining = [];
+  let anyPdfSynced = false;
   for (const payload of queue) {
-    const ok = await sendToBackend_(payload);
-    if (!ok) remaining.push(payload);
+    const result = await sendToBackend_(payload);
+    if (!result) {
+      remaining.push(payload);
+      continue;
+    }
+    // Same as the online-submit path in submitStop_ — a queued delivery
+    // only gets its PDF built once it actually reaches the backend, so
+    // the print button only becomes available here, on sync.
+    if (result.pdf_file_id) {
+      mergeDriverStateLocal_(payload.stop_id, { pdf_file_id: result.pdf_file_id });
+      anyPdfSynced = true;
+    }
   }
   writeQueue_(remaining);
+  if (anyPdfSynced) applyStoredDriverState_();
   updateQueueBanner_();
   if (remaining.length < queue.length) {
     showToast((queue.length - remaining.length) + " queued delivery/deliveries synced.");
@@ -1018,6 +1065,22 @@ function registerServiceWorker_() {
 function saveDriverStateLocal_(stopId, state) {
   const all = readDriverStateStore_();
   all[stopId] = state;
+  try {
+    localStorage.setItem(STORAGE_KEY_STATE, JSON.stringify(all));
+  } catch (err) {
+    console.warn("could not persist driver state", err);
+  }
+}
+
+// Patches a few fields onto a stop's already-saved state instead of
+// replacing the whole record the way saveDriverStateLocal_ does — used for
+// pdf_file_id, which only becomes known sometime after the full
+// racks/exceptions/signature state was already saved (immediately on
+// submit for an online delivery, or later on offline-queue sync), and must
+// not clobber it.
+function mergeDriverStateLocal_(stopId, patch) {
+  const all = readDriverStateStore_();
+  all[stopId] = Object.assign({}, all[stopId], patch);
   try {
     localStorage.setItem(STORAGE_KEY_STATE, JSON.stringify(all));
   } catch (err) {

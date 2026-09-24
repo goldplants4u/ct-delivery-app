@@ -11,7 +11,7 @@
      several minutes (or a hard reload) to actually show up otherwise. Bump
      this string any time app.js or style.css changes so the new file is
      guaranteed to load right away instead of a stale cached copy. -->
-<link rel="stylesheet" href="style.css?v=2026-09-24c">
+<link rel="stylesheet" href="style.css?v=2026-09-24e">
 </head>
 <body>
 
@@ -57,6 +57,15 @@
     </div>
   </header>
   <main>
+    <!-- Shown only once this stop already has a signed PDF (driver_state.pdf_file_id,
+         set after a successful submit — see app.js openStopScreen_/submitStop_).
+         Opens the PDF via the backend's ?action=get_pdf endpoint so the driver
+         can print it (Safari's Share icon > Print, to any AirPrint printer)
+         without ever needing a Google login on the iPad. -->
+    <div class="print-pdf-row hidden" id="print-pdf-row">
+      <button class="secondary" id="print-pdf-btn">Print Delivery Note</button>
+    </div>
+
     <div class="section-title">Invoice</div>
     <table class="line-items-table" id="line-items-table"></table>
 
@@ -129,6 +138,6 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="app.js?v=2026-09-24c"></script>
+<script src="app.js?v=2026-09-24e"></script>
 </body>
 </html>
