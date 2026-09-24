@@ -427,68 +427,76 @@ function getStopDeliveryFee_(stop) {
   return null;
 }
 
-// Qty / Item / Size as three real columns (was Qty/Item with size crammed
-// into the same cell as an inline "— 6in" suffix, which read as one run-on
-// line per item — hard to scan quickly at a customer's door). Size gets its
-// own right-aligned column so it lines up down the page instead of trailing
-// off at a different spot on every row depending on the item name's length.
+// Qty / Item / Size as flex rows (divs, not a <table>). A table — even with
+// table-layout:fixed — pins the size column to the far right edge of the
+// full-width table, which for a short item name left a big empty gap before
+// the size, and forced the Total row's dollar figure into that same
+// fixed-width column where a real total (e.g. "$1,234.56") didn't fit and
+// got hard-wrapped mid-digit on a real iPad. Flex items size to their own
+// content instead: qty is a fixed slot, the name takes only the room its
+// text needs, and the size sits right after it with a small fixed gap — so
+// any leftover space lands at the end of the row, not between the name and
+// size. See the CSS comment on .line-items-list for the full rationale
+// (including why this also can't repeat the earlier colspan+flex-in-a-
+// table-cell bug — there's no table cell at all anymore).
 // The internal item code (e.g. "10beagua") is dropped from the driver view
 // entirely — it's an office/GrowFlo matching detail, not something a driver
 // acts on (see the "office-side data-quality flags" note in
 // renderStopWarnings_ just below for the same driver-vs-office principle).
 function renderLineItemsTable_(stop) {
   const items = getLineItems_(stop);
-  const table = document.getElementById("line-items-table");
-  table.innerHTML = "";
+  const list = document.getElementById("line-items-table");
+  list.innerHTML = "";
 
-  const thead = document.createElement("tr");
-  ["Qty", "Item", "Size"].forEach((h) => {
-    const th = document.createElement("th");
-    th.textContent = h;
-    thead.appendChild(th);
-  });
-  table.appendChild(thead);
+  const header = document.createElement("div");
+  header.className = "li-header";
+  const hQty = document.createElement("div");
+  hQty.className = "li-qty";
+  hQty.textContent = "Qty";
+  const hName = document.createElement("div");
+  hName.className = "li-name";
+  hName.textContent = "Item";
+  const hSize = document.createElement("div");
+  hSize.className = "li-size";
+  hSize.textContent = "Size";
+  header.appendChild(hQty);
+  header.appendChild(hName);
+  header.appendChild(hSize);
+  list.appendChild(header);
 
   items.forEach((item) => {
-    const row = document.createElement("tr");
-    const tdQty = document.createElement("td");
-    tdQty.textContent = item.qty;
-    const tdName = document.createElement("td");
-    tdName.textContent = item.item_name;
-    const tdSize = document.createElement("td");
-    tdSize.className = "item-size-col";
-    tdSize.textContent = item.size || "";
-    row.appendChild(tdQty);
-    row.appendChild(tdName);
-    row.appendChild(tdSize);
-    table.appendChild(row);
+    const row = document.createElement("div");
+    row.className = "li-row";
+    const qty = document.createElement("div");
+    qty.className = "li-qty";
+    qty.textContent = item.qty;
+    const name = document.createElement("div");
+    name.className = "li-name";
+    name.textContent = item.item_name;
+    const size = document.createElement("div");
+    size.className = "li-size";
+    size.textContent = item.size || "";
+    row.appendChild(qty);
+    row.appendChild(name);
+    row.appendChild(size);
+    list.appendChild(row);
   });
 
   const total = getStopTotal_(stop);
   if (total != null) {
-    // Plain 3 cells, same as every item row — NOT a colspan+flex cell like
-    // this used to be. That combo (a <td colspan="2"> also set to
-    // display:flex, in a table-layout:fixed table) rendered fine in a
-    // desktop preview but broke on a real iPad: Safari computed the spanned
-    // cell's flex content at close to zero width, so "Total" and the dollar
-    // figure each wrapped letter-by-letter ("To" / "ta" / "l"). Right-aligned
-    // text in two ordinary cells (label in the Item column, value in the
-    // Size column) sits just as close together, with none of that risk.
-    const totalRow = document.createElement("tr");
-    totalRow.className = "total-row";
-    const tdBlank = document.createElement("td");
-    const tdLabel = document.createElement("td");
-    tdLabel.className = "total-label";
-    tdLabel.textContent = "Total";
-    const tdVal = document.createElement("td");
-    tdVal.className = "total-value";
+    const totalRow = document.createElement("div");
+    totalRow.className = "li-row total-row";
+    const label = document.createElement("div");
+    label.className = "total-label";
+    label.textContent = "Total";
+    const val = document.createElement("div");
+    val.className = "total-value";
     // toLocaleString for a real "$1,234.56" — toFixed(2) alone never adds
     // the thousands separator, which reads oddly next to real order totals.
-    tdVal.textContent = "$" + total.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    totalRow.appendChild(tdBlank);
-    totalRow.appendChild(tdLabel);
-    totalRow.appendChild(tdVal);
-    table.appendChild(totalRow);
+    val.textContent = "$" + total.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    totalRow.appendChild(label);
+    totalRow.appendChild(val);
+    list.appendChild(totalRow);
   }
 }
 

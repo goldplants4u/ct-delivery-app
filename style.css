@@ -104,14 +104,31 @@ button.secondary {
 .print-pdf-row { margin-bottom: 4px; }
 .print-pdf-row .secondary { width: 100%; }
 
-.line-items-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 15px; table-layout: fixed; }
-.line-items-table th, .line-items-table td { text-align: left; padding: 10px 6px; border-bottom: 1px solid #e2e2e2; vertical-align: top; word-break: break-word; }
-.line-items-table th { color: #666; font-size: 12px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.03em; }
-.line-items-table th:first-child, .line-items-table td:first-child { width: 44px; font-weight: 600; }
-.line-items-table th:last-child, .line-items-table td:last-child { width: 64px; text-align: right; }
-.line-items-table td.item-size-col { color: #777; text-align: right; }
-.line-items-table tr.total-row td { border-bottom: none; padding-top: 14px; font-weight: 700; }
-.line-items-table td.total-label { text-align: right; }
+/* Flex rows, not a <table>. A table (even table-layout:fixed) pins the last
+   column to the far right edge of the full-width table, which for a short
+   item name leaves a huge empty gap before the size — and forces the Total
+   row's dollar figure into that same fixed-width column, where a real total
+   like "$1,234.56" doesn't fit and gets hard-wrapped mid-digit. Flex items
+   are sized to their own content instead: qty is a fixed slot, the name
+   takes only the room its text needs (shrinking/wrapping if the row is
+   tight), and the size sits right after it with a small fixed gap — so any
+   leftover space lands at the end of the row, not between the name and the
+   size. Also permanently avoids the earlier colspan+flex-in-a-table-cell
+   combination that broke on real iPad Safari (see PROJECT-NOTES.md) —
+   there's no table cell here at all, so that failure mode can't recur. */
+.line-items-list { margin-top: 12px; font-size: 15px; }
+.li-header, .li-row {
+  display: flex; align-items: baseline; gap: 10px;
+  padding: 10px 6px; border-bottom: 1px solid #e2e2e2;
+}
+.li-header { color: #666; font-size: 12px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.03em; }
+.li-qty { flex: 0 0 26px; font-weight: 600; }
+.li-header .li-qty { font-weight: 700; }
+.li-name { flex: 0 1 auto; min-width: 0; overflow-wrap: break-word; }
+.li-size { flex: 0 0 auto; margin-left: 8px; color: #777; white-space: nowrap; }
+.li-row.total-row { border-bottom: none; padding-top: 14px; font-weight: 700; justify-content: flex-end; }
+.total-label { flex: 0 0 auto; }
+.total-value { flex: 0 0 auto; white-space: nowrap; }
 
 .section-title { font-size: 15px; text-transform: uppercase; color: #666; margin: 20px 0 8px; font-weight: 700; }
 
