@@ -66,10 +66,13 @@ async function init() {
   wirePhotoCapture();
   setupSignaturePad();
 
+  const testDate = getTestDateOverride_();
+  const manifestUrl = APPS_SCRIPT_URL + "?action=get_route_plan" + (testDate ? "&date=" + encodeURIComponent(testDate) : "");
+
   let loadedFromCache = false;
   try {
     const [manifestRes, pinsRes] = await Promise.all([
-      fetch(APPS_SCRIPT_URL + "?action=get_route_plan", { cache: "no-store" }),
+      fetch(manifestUrl, { cache: "no-store" }),
       fetch(PINS_FILE, { cache: "no-store" }),
     ]);
     const manifestJson = await manifestRes.json();
@@ -90,7 +93,14 @@ async function init() {
     }
     manifest = manifestJson;
     pins = await pinsRes.json();
-    saveRoutePlanCache_(manifest, pins);
+    if (testDate) {
+      // Deliberately NOT saved to the offline route-plan cache — that
+      // cache is what a real driver falls back to if they go offline
+      // later, and it must never end up holding a test date's data.
+      showTestModeBanner_(testDate);
+    } else {
+      saveRoutePlanCache_(manifest, pins);
+    }
     applyStoredDriverState_();
   } catch (err) {
     // Network-level failure (offline, dead zone, etc.) — fall back to the
@@ -460,21 +470,27 @@ function renderLineItemsTable_(stop) {
 
   const total = getStopTotal_(stop);
   if (total != null) {
+    // Plain 3 cells, same as every item row — NOT a colspan+flex cell like
+    // this used to be. That combo (a <td colspan="2"> also set to
+    // display:flex, in a table-layout:fixed table) rendered fine in a
+    // desktop preview but broke on a real iPad: Safari computed the spanned
+    // cell's flex content at close to zero width, so "Total" and the dollar
+    // figure each wrapped letter-by-letter ("To" / "ta" / "l"). Right-aligned
+    // text in two ordinary cells (label in the Item column, value in the
+    // Size column) sits just as close together, with none of that risk.
     const totalRow = document.createElement("tr");
-    // Blank cell under Qty only, total-cell spans Item + Size (colspan 2)
-    // so the flex label/value pair below has room to spread out — the
-    // Size column alone (64px) is too narrow for "Total   $220.00".
+    totalRow.className = "total-row";
     const tdBlank = document.createElement("td");
+    const tdLabel = document.createElement("td");
+    tdLabel.className = "total-label";
+    tdLabel.textContent = "Total";
     const tdVal = document.createElement("td");
-    tdVal.colSpan = 2;
-    tdVal.className = "total-cell";
-    const labelSpan = document.createElement("span");
-    labelSpan.textContent = "Total";
-    const valSpan = document.createElement("span");
-    valSpan.textContent = "$" + total.toFixed(2);
-    tdVal.appendChild(labelSpan);
-    tdVal.appendChild(valSpan);
+    tdVal.className = "total-value";
+    // toLocaleString for a real "$1,234.56" — toFixed(2) alone never adds
+    // the thousands separator, which reads oddly next to real order totals.
+    tdVal.textContent = "$" + total.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     totalRow.appendChild(tdBlank);
+    totalRow.appendChild(tdLabel);
     totalRow.appendChild(tdVal);
     table.appendChild(totalRow);
   }
@@ -1053,6 +1069,35 @@ function registerServiceWorker_() {
   navigator.serviceWorker.register("service-worker.js").catch((err) => {
     console.warn("service worker registration failed", err);
   });
+}
+
+// ==================================================================
+// TESTING: view an already-published route plan for a date other than
+// today, without touching the real "only ever show today" rule
+// (getRoutePlanForRequest_ in Code.gs already refuses a wrong-date
+// route plan by default — this just opts into a specific date via the
+// URL, the same ?date= param that endpoint has always accepted).
+// ==================================================================
+// Open the app as index.html?test_date=2026-09-23 to preview that date's
+// published route plan (it must already exist — "Create Route Plan..."
+// still has to have been run for that date at some point). With no
+// test_date param, behavior is unchanged: today's plan only.
+function getTestDateOverride_() {
+  const params = new URLSearchParams(location.search);
+  const d = params.get("test_date");
+  return /^\d{4}-\d{2}-\d{2}$/.test(d || "") ? d : null;
+}
+
+// Persistent (not a toast — this needs to stay visible for the whole test
+// session, not disappear after 3 seconds) banner so a test date's data is
+// never mistaken for a real day's. Also flags the one real side effect:
+// submitting from here still writes a real row to the Deliveries Log (and
+// sends a real email unless TEST_MODE is on in Code.gs) — testing with an
+// old date doesn't make a submit itself any less real.
+function showTestModeBanner_(dateStr) {
+  const banner = document.getElementById("test-mode-banner");
+  banner.textContent = "TEST MODE — viewing " + formatDispatchDate_(dateStr) + "'s route plan, not today's. Submitting here still writes a real Deliveries Log row (and a real email unless TEST_MODE is on in Code.gs).";
+  banner.classList.remove("hidden");
 }
 
 // ==================================================================

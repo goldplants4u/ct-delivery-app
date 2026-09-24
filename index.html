@@ -11,11 +11,15 @@
      several minutes (or a hard reload) to actually show up otherwise. Bump
      this string any time app.js or style.css changes so the new file is
      guaranteed to load right away instead of a stale cached copy. -->
-<link rel="stylesheet" href="style.css?v=2026-09-24e">
+<link rel="stylesheet" href="style.css?v=2026-09-24h">
 </head>
 <body>
 
 <div class="queue-banner hidden" id="queue-banner"></div>
+<!-- Shown only when opened as ?test_date=YYYY-MM-DD (see getTestDateOverride_
+     in app.js) — previews an already-published route plan for a date other
+     than today, for testing. Not shown otherwise; today's data only. -->
+<div class="test-mode-banner hidden" id="test-mode-banner"></div>
 
 <!-- LOGIN -->
 <section class="screen active" id="screen-login">
@@ -138,6 +142,6 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="app.js?v=2026-09-24e"></script>
+<script src="app.js?v=2026-09-24h"></script>
 </body>
 </html>
