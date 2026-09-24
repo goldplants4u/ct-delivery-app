@@ -83,6 +83,8 @@ button.secondary {
 .stop-card.pending { border-left-color: #d9a520; }
 .stop-card.done-clean { border-left-color: #2f8f4e; }
 .stop-card.done-exceptions { border-left-color: #b3261e; }
+.stop-card .time { font-weight: 700; font-size: 14px; color: #2f5233; margin-bottom: 2px; }
+.stop-card .time.unset { color: #999; font-weight: 600; font-style: italic; }
 .stop-card .name { font-weight: 700; font-size: 19px; }
 .stop-card .meta { color: #555; font-size: 14px; margin-top: 4px; }
 .stop-card .status-pill {

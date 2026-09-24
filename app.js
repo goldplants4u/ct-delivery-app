@@ -2,13 +2,17 @@
  * CT Delivery App — frontend logic (Hours 3-6 of the 8-hour build plan)
  *
  * Screens: login -> route list -> stop detail -> exceptions -> signature -> (back to route list)
- * Data: the manifest (route/stops/line items/totals) is fetched live from the Apps Script
- *       backend (APPS_SCRIPT_URL + "?action=get_manifest") — NOT a static file bundled with
- *       this page. That's a deliberate change from the original design: publishing a new day
- *       used to mean uploading a new manifest.json to GitHub every single day, which is exactly
- *       what this was changed to avoid. Office publishes from the Sheet menu ("Publish Manifest
- *       from Draft...") and the app picks it up on the driver's next login — no GitHub involved.
- *       See Code.gs's getManifestForRequest_ and PROJECT-NOTES.md.
+ * Data: the day's route plan (route/stops/line items/totals) is fetched live from the Apps
+ *       Script backend (APPS_SCRIPT_URL + "?action=get_route_plan") — NOT a static file bundled
+ *       with this page. That's a deliberate change from the original design: publishing a new
+ *       day used to mean uploading a new manifest file to GitHub every single day, which is
+ *       exactly what this was changed to avoid. Office runs the Sheet menu's "Create Route
+ *       Plan..." (one step — builds AND publishes) and the app picks it up on the driver's next
+ *       login — no GitHub involved. See Code.gs's getRoutePlanForRequest_ and PROJECT-NOTES.md.
+ *       This fetched data still lives in a JS variable/property named "manifest" throughout
+ *       this file below (kept as-is on purpose when the backend was renamed to "route plan" —
+ *       purely internal, not worth the diff/regression risk of renaming everywhere for no
+ *       user-visible benefit — see PROJECT-NOTES.md).
  *       pins.json (truck PINs) is still a plain static file — those essentially never change.
  *
  * ====================================================================
@@ -49,7 +53,7 @@ async function init() {
 
   try {
     const [manifestRes, pinsRes] = await Promise.all([
-      fetch(APPS_SCRIPT_URL + "?action=get_manifest", { cache: "no-store" }),
+      fetch(APPS_SCRIPT_URL + "?action=get_route_plan", { cache: "no-store" }),
       fetch(PINS_FILE, { cache: "no-store" }),
     ]);
     const manifestJson = await manifestRes.json();
@@ -60,7 +64,7 @@ async function init() {
     // rather than a generic "check your connection", since this failure
     // usually means the office forgot to publish, not a network problem.
     if (manifestJson && manifestJson.ok === false) {
-      showToast(manifestJson.error || "No manifest published for today yet.");
+      showToast(manifestJson.error || "No route plan published for today yet.");
       console.error("manifest fetch returned an error", manifestJson);
       return;
     }
@@ -68,7 +72,7 @@ async function init() {
     pins = await pinsRes.json();
     applyStoredDriverState_();
   } catch (err) {
-    showToast("Could not load today's manifest. Check your connection and reload.");
+    showToast("Could not load today's route plan. Check your connection and reload.");
     console.error("manifest/pins load failed", err);
     return;
   }
@@ -166,12 +170,21 @@ function renderRouteList_() {
     card.className = "stop-card " + statusToClass_(status);
 
     const left = document.createElement("div");
+    const time = document.createElement("div");
+    time.className = "time";
+    if (stop.delivery_time) {
+      time.textContent = stop.delivery_time;
+    } else {
+      time.textContent = "No time set";
+      time.classList.add("unset");
+    }
     const name = document.createElement("div");
     name.className = "name";
     name.textContent = stop.customer_name;
     const meta = document.createElement("div");
     meta.className = "meta";
     meta.textContent = stopMetaLine_(stop);
+    left.appendChild(time);
     left.appendChild(name);
     left.appendChild(meta);
 
@@ -721,7 +734,7 @@ async function submitStop_(wantsSignature) {
 
   // Everything below racks_unloaded is extra context so the backend (Hour 7)
   // can build a proof-of-delivery PDF without a second lookup — the backend
-  // only ever sees a Sheet, not this static manifest file. Deliberately NOT
+  // only ever sees a Sheet, not the published route_plan.json file. Deliberately NOT
   // included: total_discrepancy_note / printed_subtotal_on_pdf — that's an
   // internal billing note about our own PDF export bug (see PROJECT-NOTES.md)
   // and must never end up on a document or email sent to the customer.
