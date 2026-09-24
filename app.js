@@ -3,12 +3,18 @@
  *
  * Screens: login -> route list -> stop detail -> exceptions -> signature -> (back to route list)
  * Data: the day's route plan (route/stops/line items/totals) is fetched live from the Apps
- *       Script backend (APPS_SCRIPT_URL + "?action=get_route_plan") — NOT a static file bundled
- *       with this page. That's a deliberate change from the original design: publishing a new
- *       day used to mean uploading a new manifest file to GitHub every single day, which is
- *       exactly what this was changed to avoid. Office runs the Sheet menu's "Create Route
- *       Plan..." (one step — builds AND publishes) and the app picks it up on the driver's next
- *       login — no GitHub involved. See Code.gs's getRoutePlanForRequest_ and PROJECT-NOTES.md.
+ *       Script backend — NOT a static file bundled with this page. That's a deliberate change
+ *       from the original design: publishing a new day used to mean uploading a new manifest
+ *       file to GitHub every single day, which is exactly what this was changed to avoid.
+ *       Office runs the Sheet menu's "Create Route Plan..." (one step — builds AND publishes)
+ *       and the app picks it up on the driver's next login — no GitHub involved.
+ *       As of 2026-09-24 this is a TWO-PHASE fetch, not one: init() first fetches
+ *       "?action=get_trucks" (small, always live — just today's truck list, so the login
+ *       screen is never showing a stale/cached set of trucks) and paints the login screen
+ *       from that, then fetches the full "?action=get_route_plan" (every stop, every line
+ *       item — the slow part) in the background via loadFullRoutePlan_. See init()'s own
+ *       comment for the full rationale and Code.gs's getTrucksForRequest_ /
+ *       getRoutePlanForRequest_ / publishRoutePlan_ and PROJECT-NOTES.md.
  *       This fetched data still lives in a JS variable/property named "manifest" throughout
  *       this file below (kept as-is on purpose when the backend was renamed to "route plan" —
  *       purely internal, not worth the diff/regression risk of renaming everywhere for no
@@ -45,6 +51,7 @@ const STORAGE_KEY_ROUTE_PLAN_CACHE = "ct_route_plan_cache_v1"; // last successfu
 // ---------- app state ----------
 let manifest = null;
 let pins = null;
+let manifestReadyPromise_ = null; // set once in init() to loadFullRoutePlan_()'s promise; the login button handler awaits this if the driver taps "Start Route" before the full route plan has finished loading in the background — see both places below
 let selectedTruck = null;   // truck chosen on login screen, before PIN is confirmed
 let currentTruck = null;    // truck the driver is logged into
 let currentStop = null;     // the stop object currently open in stop/exceptions/signature screens
@@ -66,61 +73,80 @@ async function init() {
   wirePhotoCapture();
   setupSignaturePad();
 
-  let loadedFromCache = false;
+  // Two-phase load. This REPLACES an earlier stale-while-revalidate design
+  // that painted a CACHED truck list immediately and silently swapped in
+  // fresh data later — G flagged that as actively wrong, not just slow
+  // ("trucks change... just the trucks that run that day load first and
+  // entire data loads after"): which trucks are running can change day to
+  // day, so showing a stale list — even for a couple seconds — risks a
+  // driver tapping a truck that isn't actually running today. So the truck
+  // list is now NEVER shown from a cache; the login screen simply waits
+  // for a small, fast, always-live fetch:
+  //   1. get_trucks (loadFullRoutePlan_'s sibling, inline below) — a tiny
+  //      file with just {dispatch_date, trucks, truck_drivers,
+  //      truck_start_times}, written by publishRoutePlan_ alongside the
+  //      full route plan (see Code.gs). Nothing cached is ever painted for
+  //      this — only what this fetch actually returns, right now.
+  //   2. get_route_plan — the FULL route plan (every stop, every line
+  //      item). This is the genuinely slow Drive/Sheets round trip that
+  //      was the real cause of "it loads a while until trucks shown."
+  //      loadFullRoutePlan_ runs this in the background, in parallel with
+  //      phase 1, and the login button handler (wireLoginScreen, below)
+  //      awaits manifestReadyPromise_ if the driver enters a valid PIN
+  //      before phase 2 has finished.
+  // The offline route-plan cache (localStorage) still exists, but its job
+  // narrows to: (a) a fallback for phase 1 itself if get_trucks can't be
+  // reached at all (shown with a clear "offline"/stale-data toast, never
+  // silently), and (b) phase 2's offline fallback so the app still works
+  // through a dead zone after loading once this morning with signal.
+  const cachedPlan = loadRoutePlanCache_();
+
+  manifestReadyPromise_ = loadFullRoutePlan_(cachedPlan);
+
+  let trucksCacheReason = null; // null | "offline" | "not_published" — same meaning/messaging as before, just now scoped to the trucks fetch instead of the whole route plan
+  let trucksData = null;
   try {
-    const [manifestRes, pinsRes] = await Promise.all([
-      fetch(APPS_SCRIPT_URL + "?action=get_route_plan", { cache: "no-store" }),
+    const [trucksRes, pinsRes] = await Promise.all([
+      fetch(APPS_SCRIPT_URL + "?action=get_trucks", { cache: "no-store" }),
       fetch(PINS_FILE, { cache: "no-store" }),
     ]);
-    const manifestJson = await manifestRes.json();
-    // The backend returns the manifest object directly on success, or
-    // {ok:false, error:"..."} when nothing's been published yet at all —
-    // see getRoutePlanForRequest_ in Code.gs. Surface that message plainly
-    // rather than a generic "check your connection", since this failure
-    // usually means the office forgot to publish, not a network problem.
-    // NOTE: as of 2026-09-24 the backend serves whatever route plan is
-    // currently published, whatever date it's for — it no longer checks
-    // that against today (see the TODO comment on getRoutePlanForRequest_
-    // in Code.gs for why, and why that check should come back before this
-    // is relied on for real daily driving). The date actually being shown
-    // is still surfaced honestly below (login-date, the toast on a cache
-    // fallback) — just no longer enforced.
-    // Deliberately NOT falling back to the offline cache here — an
-    // explicit "nothing published" answer from the server is different
-    // from a network failure, and showing yesterday's cached route plan
-    // in that case would hide a real office mistake instead of surfacing it.
-    if (manifestJson && manifestJson.ok === false) {
-      showToast(manifestJson.error || "No route plan published yet.");
-      console.error("manifest fetch returned an error", manifestJson);
-      return;
+    const trucksJson = await trucksRes.json();
+    if (trucksJson && trucksJson.ok === false) {
+      if (!cachedPlan) {
+        showToast(trucksJson.error || "No route plan published yet.");
+        console.error("trucks fetch returned an error", trucksJson);
+        return;
+      }
+      console.error("trucks fetch returned an error; falling back to the last cached truck list", trucksJson);
+      trucksData = cachedPlan.manifest;
+      trucksCacheReason = "not_published";
+    } else {
+      trucksData = trucksJson;
     }
-    manifest = manifestJson;
     pins = await pinsRes.json();
-    saveRoutePlanCache_(manifest, pins);
-    applyStoredDriverState_();
   } catch (err) {
     // Network-level failure (offline, dead zone, etc.) — fall back to the
-    // last successfully loaded route plan/pins instead of just erroring
-    // out, so the app still works the rest of the day after loading once
-    // with signal this morning. See the offline-first note at the top of
-    // this file.
-    const cached = loadRoutePlanCache_();
-    if (cached) {
-      manifest = cached.manifest;
-      pins = cached.pins;
-      loadedFromCache = true;
-      applyStoredDriverState_();
-    } else {
-      showToast("Could not load today's route plan. Check your connection and reload.");
-      console.error("manifest/pins load failed, and no offline cache available", err);
+    // last cached truck list instead of leaving the login screen blank.
+    // Still clearly labeled as possibly-stale below, since this is exactly
+    // the case ("trucks change") the two-phase design exists to avoid
+    // showing silently.
+    if (!cachedPlan) {
+      showToast("Could not load today's trucks. Check your connection and reload.");
+      console.error("trucks/pins load failed, and no offline cache available", err);
       return;
     }
+    console.warn("trucks fetch failed; falling back to the last cached truck list", err);
+    trucksData = cachedPlan.manifest;
+    pins = cachedPlan.pins;
+    trucksCacheReason = "offline";
   }
 
-  document.getElementById("login-date").textContent = formatDispatchDate_(manifest.dispatch_date);
-  renderTruckSelect_();
-  if (loadedFromCache) {
-    showToast("Offline — showing the last route plan loaded (" + formatDispatchDate_(manifest.dispatch_date) + ").");
+  document.getElementById("login-date").textContent = formatDispatchDate_(trucksData.dispatch_date);
+  renderTruckSelect_(trucksData.trucks || []);
+  if (trucksCacheReason === "offline") {
+    showToast("Offline — showing the last truck list loaded (" + formatDispatchDate_(trucksData.dispatch_date) + "). Trucks running today may have changed.");
+  } else if (trucksCacheReason === "not_published") {
+    showToast("No newer route plan published yet — showing the last truck list loaded (" + formatDispatchDate_(trucksData.dispatch_date) + ").");
   }
 
   updateQueueBanner_();
@@ -145,26 +171,79 @@ async function init() {
   flushOfflineQueue_();
 }
 
+// Phase 2 of init()'s two-phase load: fetches the FULL route plan (every
+// stop, every line item — the genuinely slow Drive/Sheets round trip) in
+// the background, in parallel with phase 1's fast get_trucks fetch above.
+// Sets the module-level `manifest`/`pins` on success and caches them for
+// offline use next time, exactly like the old single-phase load did.
+// Returns true once manifest/pins are usable (either freshly fetched or
+// filled in from the offline cache) or false if nothing could be loaded at
+// all — the login button handler (wireLoginScreen, below) awaits this via
+// manifestReadyPromise_ and checks that return value if the driver taps
+// "Start Route" before this has finished.
+async function loadFullRoutePlan_(cachedPlan) {
+  try {
+    const [manifestRes, pinsRes] = await Promise.all([
+      fetch(APPS_SCRIPT_URL + "?action=get_route_plan", { cache: "no-store" }),
+      fetch(PINS_FILE, { cache: "no-store" }),
+    ]);
+    const manifestJson = await manifestRes.json();
+    // NOTE: as of 2026-09-24 the backend serves whatever route plan is
+    // currently published, whatever date it's for — it no longer checks
+    // that against today (see the TODO comment on getRoutePlanForRequest_
+    // in Code.gs for why, and why that check should come back before this
+    // is relied on for real daily driving).
+    if (manifestJson && manifestJson.ok === false) {
+      if (!cachedPlan) {
+        console.error("route plan fetch returned an error, and no offline cache available", manifestJson);
+        return false;
+      }
+      console.error("route plan fetch returned an error; falling back to the last cached route plan", manifestJson);
+      manifest = cachedPlan.manifest;
+      pins = cachedPlan.pins;
+      applyStoredDriverState_();
+      return true;
+    }
+    manifest = manifestJson;
+    pins = await pinsRes.json();
+    saveRoutePlanCache_(manifest, pins);
+    applyStoredDriverState_();
+    return true;
+  } catch (err) {
+    // Network-level failure (offline, dead zone, etc.) — fall back to the
+    // last successfully loaded route plan/pins, same offline-first
+    // behavior as before, just now scoped to phase 2 only.
+    if (!cachedPlan) {
+      console.error("route plan fetch failed, and no offline cache available", err);
+      return false;
+    }
+    console.warn("background route plan load failed; falling back to the last cached route plan", err);
+    manifest = cachedPlan.manifest;
+    pins = cachedPlan.pins;
+    applyStoredDriverState_();
+    return true;
+  }
+}
+
 // ==================================================================
 // LOGIN SCREEN
 // ==================================================================
-// Truck buttons are NOT hardcoded. renderTruckSelect_() (called from
-// init() once the route plan has loaded) builds one button per truck
-// that actually has stops in TODAY's published route plan
-// (manifest.trucks, set server-side by publishRoutePlan_ in Code.gs).
-// This is deliberate, not an oversight: a fixed "Truck 4 / Truck 5"
-// list silently left out any other truck ERP-outFuture had assigned
-// stops to — found for real when Truck 3 had a full route and wasn't
-// selectable at all. A truck still needs an entry in pins.json to
-// actually log in (that file is unrelated to which buttons render —
-// see its own comment); a truck that shows up in today's route but
-// has no pins.json entry yet gets its own clear error at login time
+// Truck buttons are NOT hardcoded. renderTruckSelect_(trucks) (called from
+// init() once the fast get_trucks fetch resolves — see the two-phase load
+// comment in init()) builds one button per truck that actually has stops
+// in TODAY's published route plan. This is deliberate, not an oversight: a
+// fixed "Truck 4 / Truck 5" list silently left out any other truck
+// ERP-outFuture had assigned stops to — found for real when Truck 3 had a
+// full route and wasn't selectable at all. A truck still needs an entry in
+// pins.json to actually log in (that file is unrelated to which buttons
+// render — see its own comment); a truck that shows up in today's route
+// but has no pins.json entry yet gets its own clear error at login time
 // below, rather than "Wrong PIN."
-function renderTruckSelect_() {
+function renderTruckSelect_(trucksIn) {
   const truckSelect = document.getElementById("truck-select");
   truckSelect.innerHTML = "";
 
-  const trucks = (manifest.trucks || []).slice().sort((a, b) => {
+  const trucks = (trucksIn || []).slice().sort((a, b) => {
     const na = parseInt((a.match(/\d+/) || ["0"])[0], 10);
     const nb = parseInt((b.match(/\d+/) || ["0"])[0], 10);
     return na - nb;
@@ -209,14 +288,14 @@ function wireLoginScreen() {
     updateLoginBtnState_();
   });
 
-  loginBtn.addEventListener("click", () => {
+  loginBtn.addEventListener("click", async () => {
     const enteredPin = pinInput.value.trim();
     if (!selectedTruck || !enteredPin) return;
 
     if (!pins) {
       // pins never loaded — either today's route plan hasn't been published yet
-      // (see init()'s manifest fetch, which returns early before loading pins in
-      // that case) or the pins.json/route plan fetch itself failed. Either way,
+      // (see init()'s trucks fetch, which returns early before loading pins in
+      // that case) or the pins.json fetch itself failed. Either way,
       // no PIN could ever match here, so saying "Wrong PIN" would be misleading —
       // the actual fix is publishing today's route plan or reloading the page.
       loginError.textContent = "Route data hasn't loaded — check that today's Route Plan has been published, then reload this page.";
@@ -236,6 +315,26 @@ function wireLoginScreen() {
       pinInput.value = "";
       updateLoginBtnState_();
       return;
+    }
+
+    // PIN's correct. The truck list (phase 1) is loaded by now, but the
+    // FULL route plan (phase 2 — every stop's details, needed by
+    // renderRouteList_/openRouteScreen_) may still be loading in the
+    // background if the driver was quick on the PIN. Wait for it here
+    // rather than opening an empty route screen.
+    if (!manifest) {
+      const originalLabel = loginBtn.textContent;
+      loginBtn.disabled = true;
+      loginBtn.textContent = "Loading route details…";
+      loginError.textContent = "";
+      const loaded = await manifestReadyPromise_;
+      loginBtn.textContent = originalLabel;
+      if (!loaded || !manifest) {
+        loginBtn.disabled = false;
+        loginError.textContent = "Could not load today's route details. Check your connection and try again.";
+        return;
+      }
+      updateLoginBtnState_();
     }
 
     currentTruck = selectedTruck;
