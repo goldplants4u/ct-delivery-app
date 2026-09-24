@@ -15,6 +15,18 @@
  *       user-visible benefit — see PROJECT-NOTES.md).
  *       pins.json (truck PINs) is still a plain static file — those essentially never change.
  *
+ * Offline-first: two separate layers, both needed.
+ *   1. service-worker.js caches the app SHELL (this file, style.css, index.html,
+ *      pins.json) so the page itself still loads with zero signal — even a cold
+ *      relaunch, not just staying on an already-open tab. Registered below.
+ *   2. The route plan DATA (this changes daily, so it's never put in the
+ *      service worker's shell cache) is cached in localStorage after every
+ *      successful fetch and re-used if a later fetch fails — see init() below.
+ *      This means: load the app once with signal (e.g. at the depot in the
+ *      morning), and it keeps working the rest of the day even through dead
+ *      zones or a device restart, showing whatever route plan was last
+ *      successfully fetched with a clear "offline" notice.
+ *
  * ====================================================================
  * SETUP STEP YOU STILL NEED TO DO: paste your Apps Script /exec URL
  * below (from Extensions > Apps Script > Deploy > Web app, after
@@ -28,6 +40,7 @@ const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbydrIdUUOPO617n
 const PINS_FILE = "pins.json";
 const STORAGE_KEY_STATE = "ct_driver_state_v1";
 const STORAGE_KEY_QUEUE = "ct_offline_queue_v1";
+const STORAGE_KEY_ROUTE_PLAN_CACHE = "ct_route_plan_cache_v1"; // last successfully fetched {manifest, pins}, for offline fallback
 
 // ---------- app state ----------
 let manifest = null;
@@ -43,6 +56,8 @@ let rackPhotoDataUrl = null; // compressed JPEG data URL of the driver's rack ph
 document.addEventListener("DOMContentLoaded", init);
 
 async function init() {
+  registerServiceWorker_();
+
   wireLoginScreen();
   wireRouteScreen();
   wireStopScreen();
@@ -51,6 +66,7 @@ async function init() {
   wirePhotoCapture();
   setupSignaturePad();
 
+  let loadedFromCache = false;
   try {
     const [manifestRes, pinsRes] = await Promise.all([
       fetch(APPS_SCRIPT_URL + "?action=get_route_plan", { cache: "no-store" }),
@@ -63,6 +79,10 @@ async function init() {
     // getManifestForRequest_ in Code.gs. Surface that message plainly
     // rather than a generic "check your connection", since this failure
     // usually means the office forgot to publish, not a network problem.
+    // Deliberately NOT falling back to the offline cache here — an
+    // explicit "nothing published" answer from the server is different
+    // from a network failure, and showing yesterday's cached route plan
+    // in that case would hide a real office mistake instead of surfacing it.
     if (manifestJson && manifestJson.ok === false) {
       showToast(manifestJson.error || "No route plan published for today yet.");
       console.error("manifest fetch returned an error", manifestJson);
@@ -70,15 +90,32 @@ async function init() {
     }
     manifest = manifestJson;
     pins = await pinsRes.json();
+    saveRoutePlanCache_(manifest, pins);
     applyStoredDriverState_();
   } catch (err) {
-    showToast("Could not load today's route plan. Check your connection and reload.");
-    console.error("manifest/pins load failed", err);
-    return;
+    // Network-level failure (offline, dead zone, etc.) — fall back to the
+    // last successfully loaded route plan/pins instead of just erroring
+    // out, so the app still works the rest of the day after loading once
+    // with signal this morning. See the offline-first note at the top of
+    // this file.
+    const cached = loadRoutePlanCache_();
+    if (cached) {
+      manifest = cached.manifest;
+      pins = cached.pins;
+      loadedFromCache = true;
+      applyStoredDriverState_();
+    } else {
+      showToast("Could not load today's route plan. Check your connection and reload.");
+      console.error("manifest/pins load failed, and no offline cache available", err);
+      return;
+    }
   }
 
   document.getElementById("login-date").textContent = formatDispatchDate_(manifest.dispatch_date);
   renderTruckSelect_();
+  if (loadedFromCache) {
+    showToast("Offline — showing the last route plan loaded (" + formatDispatchDate_(manifest.dispatch_date) + ").");
+  }
 
   updateQueueBanner_();
   window.addEventListener("online", () => flushOfflineQueue_());
@@ -928,6 +965,47 @@ function updateQueueBanner_() {
     banner.classList.remove("hidden");
     banner.textContent = count + " delivery" + (count === 1 ? "" : "ies") + " waiting to sync — will send automatically when back online.";
   }
+}
+
+// ==================================================================
+// OFFLINE-FIRST: route plan data cache + service worker registration
+// ==================================================================
+// Saves the just-fetched route plan/pins as the offline fallback. Called
+// only after a successful fetch (see init()) — never write a failed or
+// partial load in here.
+function saveRoutePlanCache_(manifestToCache, pinsToCache) {
+  try {
+    localStorage.setItem(STORAGE_KEY_ROUTE_PLAN_CACHE, JSON.stringify({ manifest: manifestToCache, pins: pinsToCache }));
+  } catch (err) {
+    console.warn("could not persist route plan cache", err);
+  }
+}
+
+// Returns the last cached {manifest, pins}, or null if none saved yet
+// (e.g. very first load ever, before any successful fetch happened).
+function loadRoutePlanCache_() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY_ROUTE_PLAN_CACHE);
+    return raw ? JSON.parse(raw) : null;
+  } catch (err) {
+    return null;
+  }
+}
+
+// Registers service-worker.js, which caches the app shell (this file,
+// style.css, index.html, pins.json) so the page itself still loads with
+// zero signal, not just the route plan data (that part is the
+// localStorage cache above — the service worker deliberately never
+// caches the get_route_plan fetch, since that has to stay live/fresh).
+// Feature-detected and non-fatal: an iPad on an old iOS version, or any
+// browser without service worker support, just falls back to today's
+// behavior (page load itself needs signal) with no error shown — this
+// is a progressive enhancement, not a requirement to use the app.
+function registerServiceWorker_() {
+  if (!("serviceWorker" in navigator)) return;
+  navigator.serviceWorker.register("service-worker.js").catch((err) => {
+    console.warn("service worker registration failed", err);
+  });
 }
 
 // ==================================================================
