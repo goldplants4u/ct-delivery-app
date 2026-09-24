@@ -340,9 +340,31 @@ function wireStopScreen() {
 
   const racksInput = document.getElementById("racks-unloaded-input");
   racksInput.addEventListener("input", () => {
+    // text + inputmode=numeric + pattern=[0-9]* (same combo as the
+    // qty-affected field on the exceptions screen — see PROJECT-NOTES.md)
+    // gets a true digits-only keypad on iPad Safari, but type="text" does no
+    // numeric validation of its own, so strip anything non-digit as it's typed.
+    const digitsOnly = racksInput.value.replace(/[^0-9]/g, "");
+    if (digitsOnly !== racksInput.value) racksInput.value = digitsOnly;
     const btn = document.getElementById("to-exceptions-btn");
     btn.disabled = racksInput.value === "" || Number(racksInput.value) < 0;
     renderStopWarnings_();
+  });
+
+  // +/- buttons, grouped together on one side of the input (same pattern as
+  // the exceptions screen's qty-affected stepper) — no upper cap here, since
+  // unloading more or fewer racks than expected is exactly the mismatch
+  // renderStopWarnings_() is meant to surface, not something to block.
+  function setRacksUnloaded_(n) {
+    if (!isFinite(n) || n < 0) n = 0;
+    racksInput.value = String(n);
+    racksInput.dispatchEvent(new Event("input"));
+  }
+  document.getElementById("racks-minus-btn").addEventListener("click", () => {
+    setRacksUnloaded_((racksInput.value === "" ? 0 : Number(racksInput.value)) - 1);
+  });
+  document.getElementById("racks-plus-btn").addEventListener("click", () => {
+    setRacksUnloaded_((racksInput.value === "" ? 0 : Number(racksInput.value)) + 1);
   });
 
   document.getElementById("to-exceptions-btn").addEventListener("click", () => {
@@ -563,6 +585,23 @@ function openExceptionsScreen_(stop) {
   showScreen_("screen-exceptions");
 }
 
+// Shared by renderItemPickList_ (initial render / on collapse-expand) and
+// buildExceptionInlineForm_ (live updates as the reason pill or qty stepper
+// changes, without rebuilding the whole list — see the call sites for why
+// that matters). Per G's "when minimized there must be written in row what
+// happened," a flagged line's row always names the reason and qty affected,
+// collapsed or expanded — not just a bare "Flagged" — so a driver scanning a
+// long, mostly-collapsed list can see what's wrong with each line without
+// reopening every one of them.
+function updateItemPickStatus_(statusEl, ex, expanded) {
+  if (!ex) {
+    statusEl.textContent = "Tap to flag";
+    return;
+  }
+  const qtyPart = "qty " + (ex.qty_change != null ? ex.qty_change : 0);
+  statusEl.textContent = ex.reason + " · " + qtyPart + (expanded ? " ▾" : " ▸");
+}
+
 // The whole line is one big tap target (not a separate small "Flag" button),
 // a flagged line turns red end to end, and its reason/qty/notes form expands
 // directly inside that same line — no separate "exception-forms" list
@@ -593,7 +632,7 @@ function renderItemPickList_(stop) {
     const expanded = flagged && flaggedItems[idx].expanded;
     const status = document.createElement("span");
     status.className = "item-pick-status";
-    status.textContent = !flagged ? "Tap to flag" : (expanded ? "Flagged ▾" : "Flagged ▸");
+    updateItemPickStatus_(status, flaggedItems[idx], expanded);
     main.appendChild(status);
 
     // Tapping the line only ever flags it (first tap) or collapses/expands
@@ -624,7 +663,7 @@ function renderItemPickList_(stop) {
     row.appendChild(main);
 
     if (expanded) {
-      row.appendChild(buildExceptionInlineForm_(flaggedItems[idx], idx, stop));
+      row.appendChild(buildExceptionInlineForm_(flaggedItems[idx], idx, stop, status));
     }
 
     list.appendChild(row);
@@ -639,8 +678,12 @@ function renderItemPickList_(stop) {
 // and appended directly under that line's own row (see renderItemPickList_).
 // Every control here stops its click from bubbling up to the row's own
 // collapse/expand handler, so tapping a reason button or the qty field just
-// changes that field, nothing more.
-function buildExceptionInlineForm_(ex, idx, stop) {
+// changes that field, nothing more. `statusEl` is that row's own summary
+// span (the same one renderItemPickList_ builds) — reason/qty changes below
+// update it directly in place rather than calling renderItemPickList_ again,
+// which would rebuild the entire list (every row, every tap) just to change
+// a few words of text, and interrupt a driver mid-tap on the +/- buttons.
+function buildExceptionInlineForm_(ex, idx, stop, statusEl) {
   const form = document.createElement("div");
   form.className = "exception-inline";
   form.addEventListener("click", (e) => e.stopPropagation());
@@ -656,6 +699,7 @@ function buildExceptionInlineForm_(ex, idx, stop) {
       ex.reason = r;
       reasonRow.querySelectorAll(".reason-btn").forEach((b) => b.classList.remove("selected"));
       btn.classList.add("selected");
+      updateItemPickStatus_(statusEl, ex, true);
     });
     reasonRow.appendChild(btn);
   });
@@ -706,6 +750,7 @@ function buildExceptionInlineForm_(ex, idx, stop) {
     }
     ex.qty_change = n;
     qtyInput.value = String(n);
+    updateItemPickStatus_(statusEl, ex, true);
   }
 
   minusBtn.addEventListener("click", () => setQty_((ex.qty_change || 0) - 1));
@@ -1027,23 +1072,26 @@ async function submitStop_(wantsSignature) {
   });
   applyStoredDriverState_();
 
-  const stopIdForThisSubmit = currentStop.stop_id;
-  const result = await sendToBackend_(payload);
-  if (result) {
-    // pdf_file_id lets the driver reopen this stop later and print the
-    // delivery PDF (see print-pdf-btn) — merged in on top of the state
-    // just saved above, not saveDriverStateLocal_ again, since that call
-    // overwrites the whole per-stop record rather than patching it.
-    if (result.pdf_file_id) {
-      mergeDriverStateLocal_(stopIdForThisSubmit, { pdf_file_id: result.pdf_file_id });
-      applyStoredDriverState_();
-    }
-    showToast("Delivery submitted — " + currentStop.customer_name);
-  } else {
-    queueOffline_(payload);
-    showToast("No signal — saved on this device, will send when back online.");
-  }
+  // The actual send to the backend (build the PDF, save it to Drive, email
+  // the customer — a real network round-trip that can take several seconds,
+  // longer on a cold Apps Script start) used to be awaited right here, which
+  // is what made the driver stare at a spinner for a couple of seconds on
+  // every single stop. It no longer blocks the screen: every submit — not
+  // just genuine no-signal ones — now goes through the same offline queue
+  // built for that case (see OFFLINE QUEUE below). queueOffline_ persists it
+  // to localStorage immediately (so it survives a crash/reload even before
+  // it's sent), then flushOfflineQueue_ is kicked off WITHOUT awaiting it.
+  // flushOfflineQueue_ already does everything the old inline success/fail
+  // branch used to do — retries on failure, merges pdf_file_id back into
+  // local state so the print button lights up, updates the queue banner,
+  // and shows its own "synced" toast once the backend actually confirms —
+  // so there's nothing left to branch on here.
+  const customerName = currentStop.customer_name;
+  queueOffline_(payload);
+  flushOfflineQueue_();
+  showToast("Saved — sending " + customerName + "'s delivery in the background.");
 
+  isSubmitting = false;
   currentStop = null;
   flaggedItems = {};
   rackPhotoDataUrl = null;
@@ -1093,11 +1141,43 @@ async function sendToBackend_(payload) {
 // ==================================================================
 // OFFLINE QUEUE
 // ==================================================================
+// Every submit now runs through this queue, not just genuine no-signal ones
+// (see submitStop_) — so flushOfflineQueue_ can get kicked off far more
+// often, and from more places at once (a submit, the online event, the 30s
+// interval, visibilitychange). flushInProgress_ stops two passes from
+// actually SENDING at the same time (see below), and _queue_id (assigned in
+// queueOffline_) is what lets a pass remove only the specific items it
+// confirmed sent when it writes back — never the whole queue array it
+// started with — which matters a lot now: with every submit going through
+// here, it's routine for a second stop to get queued while the first one's
+// pass is still awaiting the backend, and that second item must not get
+// wiped out when the first pass finishes and writes back. (This exact
+// clobber is what earlier testing on this change caught: item B queued
+// mid-flush was silently lost because the in-flight pass wrote back an
+// empty "remaining" list computed from its own stale snapshot rather than
+// the queue's current contents.) queuedDuringFlush_ additionally triggers
+// one extra pass right after the current one finishes, so a stop queued
+// mid-flush doesn't sit waiting for the next 30s interval — but a pass that
+// fails never retriggers itself, so a genuine outage doesn't spin.
+//
+// This care matters beyond just tidiness: the email side is already
+// careful to never double-send to a real customer (see the
+// sendDeliveryEmail_ rule in PROJECT-NOTES.md), and a queue bug that sent
+// the same stop to the backend twice would risk exactly that.
+let flushInProgress_ = false;
+let queuedDuringFlush_ = false;
+let queueIdCounter_ = 0;
+
 function queueOffline_(payload) {
+  if (!payload._queue_id) {
+    queueIdCounter_ += 1;
+    payload._queue_id = Date.now() + "-" + queueIdCounter_;
+  }
   const queue = readQueue_();
   queue.push(payload);
   writeQueue_(queue);
   updateQueueBanner_();
+  if (flushInProgress_) queuedDuringFlush_ = true;
 }
 
 function readQueue_() {
@@ -1116,34 +1196,53 @@ function writeQueue_(queue) {
 }
 
 async function flushOfflineQueue_() {
-  let queue = readQueue_();
-  if (queue.length === 0) {
-    updateQueueBanner_();
-    return;
-  }
-  if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.indexOf("PASTE_YOUR") === 0) return;
+  if (flushInProgress_) return; // a pass is already running — see the note above queueOffline_
+  flushInProgress_ = true;
+  try {
+    const queue = readQueue_();
+    if (queue.length === 0) {
+      updateQueueBanner_();
+      return;
+    }
+    if (!APPS_SCRIPT_URL || APPS_SCRIPT_URL.indexOf("PASTE_YOUR") === 0) return;
 
-  const remaining = [];
-  let anyPdfSynced = false;
-  for (const payload of queue) {
-    const result = await sendToBackend_(payload);
-    if (!result) {
-      remaining.push(payload);
-      continue;
+    const sentIds = new Set();
+    let anyPdfSynced = false;
+    for (const payload of queue) {
+      // _queue_id is purely a local bookkeeping field — strip it before it
+      // goes over the wire so the backend only ever sees the fields it
+      // already expects.
+      const { _queue_id, ...toSend } = payload;
+      const result = await sendToBackend_(toSend);
+      if (!result) continue;
+      sentIds.add(_queue_id);
+      // Same as the online-submit path in submitStop_ — a queued delivery
+      // only gets its PDF built once it actually reaches the backend, so
+      // the print button only becomes available here, on sync.
+      if (result.pdf_file_id) {
+        mergeDriverStateLocal_(payload.stop_id, { pdf_file_id: result.pdf_file_id });
+        anyPdfSynced = true;
+      }
     }
-    // Same as the online-submit path in submitStop_ — a queued delivery
-    // only gets its PDF built once it actually reaches the backend, so
-    // the print button only becomes available here, on sync.
-    if (result.pdf_file_id) {
-      mergeDriverStateLocal_(payload.stop_id, { pdf_file_id: result.pdf_file_id });
-      anyPdfSynced = true;
+    // Re-read the queue fresh rather than trusting the snapshot taken at the
+    // top of this pass — something may have been queued (or even, in
+    // principle, cleared) while the loop above was awaiting the network —
+    // and remove only the items this pass actually confirmed sent.
+    if (sentIds.size > 0) {
+      const current = readQueue_();
+      writeQueue_(current.filter((p) => !sentIds.has(p._queue_id)));
     }
-  }
-  writeQueue_(remaining);
-  if (anyPdfSynced) applyStoredDriverState_();
-  updateQueueBanner_();
-  if (remaining.length < queue.length) {
-    showToast((queue.length - remaining.length) + " queued delivery/deliveries synced.");
+    if (anyPdfSynced) applyStoredDriverState_();
+    updateQueueBanner_();
+    if (sentIds.size > 0) {
+      showToast(sentIds.size + " queued delivery/deliveries synced.");
+    }
+  } finally {
+    flushInProgress_ = false;
+    if (queuedDuringFlush_) {
+      queuedDuringFlush_ = false;
+      flushOfflineQueue_();
+    }
   }
 }
 

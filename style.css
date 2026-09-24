@@ -149,11 +149,18 @@ button.secondary {
 
 .section-title { font-size: 15px; text-transform: uppercase; color: #666; margin: 20px 0 8px; font-weight: 700; }
 
-.racks-row { display: flex; align-items: center; gap: 16px; background: #fff; padding: var(--btn-pad-v); border-radius: 12px; }
+.racks-row { display: flex; align-items: center; gap: 16px; background: #fff; padding: var(--btn-pad-v); border-radius: 12px; flex-wrap: wrap; }
 .racks-row .expected { font-size: var(--btn-font); color: #444; }
-.racks-row input[type=number] {
-  width: clamp(90px, 16vw, 120px); font-size: var(--btn-font-lg); text-align: center; padding: var(--btn-pad-v);
-  border: 2px solid #ccc; border-radius: 8px;
+/* Reuses the same .qty-stepper/.qty-input/.qty-step-group/.qty-step-btn
+   pieces as the exceptions screen's qty-affected field (see the rule in
+   PROJECT-NOTES.md about reusing these instead of one-off button sizes) —
+   same grouped +/- on one side, same digits-only keypad. .racks-stepper
+   just narrows it to fit inline in this row instead of stretching full
+   width, and drops the stepper's own top margin since it's not stacked
+   under a label here. */
+.racks-row .racks-stepper { flex: 0 0 auto; margin-top: 0; }
+.racks-row .racks-stepper .qty-input {
+  flex: 0 0 auto; width: clamp(70px, 14vw, 100px);
 }
 
 /* Each line item is one big tap target (.item-pick-main, a <button> the full
@@ -183,11 +190,19 @@ button.secondary {
 .exception-inline { padding: 0 16px 16px; border-top: 1px solid rgba(179, 38, 30, 0.25); }
 
 /* Reason picker as a row of pill buttons instead of a <select> — no dropdown
-   to open on a tablet, and the current pick is visible without tapping in. */
+   to open on a tablet, and the current pick is visible without tapping in.
+   Each button is `flex: 1 1 <basis>` (grow AND shrink), not sized to its own
+   text — flexbox then stretches every button on a given wrapped line to
+   consume all the leftover width on that line, so the row always reaches
+   edge to edge (even a lone last button on its own line fills the full
+   width by itself) instead of leaving dead space on the right, per G's
+   "make them bigger... cover from left to right full wide." */
 .reason-btn-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
 .reason-btn {
-  padding: clamp(11px, 2vw, 15px) clamp(16px, 2.8vw, 20px); font-size: clamp(15px, 1.9vw, 17px); font-weight: 700;
+  flex: 1 1 140px;
+  padding: clamp(14px, 2.4vw, 20px) clamp(12px, 2vw, 18px); font-size: var(--btn-font); font-weight: 700;
   border: 2px solid #b3261e; border-radius: 999px; background: #fff; color: #b3261e; cursor: pointer;
+  text-align: center;
 }
 .reason-btn.selected { background: #b3261e; color: #fff; }
 
@@ -204,7 +219,17 @@ button.secondary {
   display: flex; flex: 0 0 auto; border: 2px solid #999; border-radius: 12px; overflow: hidden;
 }
 .qty-step-btn {
-  flex: 0 0 clamp(58px, 13vw, 80px); font-size: clamp(26px, 5vw, 34px); font-weight: 700; line-height: 1;
+  /* Longhand flex-grow/flex-shrink + a plain `width` — not the `flex:`
+     shorthand with clamp() as its flex-basis — after a real-device report
+     of the plus button effectively disappearing (collapsing to 0 width)
+     while the minus button rendered fine right next to it. That's a known
+     WebKit quirk with clamp()/calc() inside the `flex` shorthand's basis
+     slot that doesn't show up in this environment's own (Chromium-based)
+     testing; a plain `width` isn't part of that shorthand and doesn't hit
+     it. See PROJECT-NOTES.md — same "verify on real iPad Safari, not just
+     preview" lesson as the earlier colspan+flex Total-row bug. */
+  flex-grow: 0; flex-shrink: 0; width: clamp(58px, 13vw, 80px);
+  font-size: clamp(26px, 5vw, 34px); font-weight: 700; line-height: 1;
   border: none; background: #fff; color: #444; cursor: pointer;
 }
 .qty-step-btn.qty-minus { border-right: 2px solid #999; }
@@ -214,18 +239,21 @@ button.secondary {
   width: 100%; padding: 8px; font-size: 15px; border: 1px solid #ccc; border-radius: 6px; margin-top: 14px;
 }
 
-/* The one deliberate way to unflag a line — separate from, and visually
-   quieter than, the reason/qty controls above it, so it isn't mistaken for
-   part of filling in the exception's details. Tapping the row itself only
+/* The one deliberate way to unflag a line — kept visually distinct from the
+   reason/qty controls above it (outlined instead of filled, so it doesn't
+   read as "the next step" in filling out the form) but still a real button
+   — bordered, sized off the same --btn vars as everything else — not a
+   plain text link with just a hairline divider, which read as too easy to
+   miss/too small a target on a real device. Tapping the row itself only
    collapses/expands this form now (see renderItemPickList_'s comment) —
    this button is what actually removes the flag. */
 .unflag-btn {
-  width: 100%; margin-top: 16px; padding: clamp(12px, 2vw, 16px);
-  font-size: clamp(14px, 1.8vw, 16px); font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em;
-  border: none; border-top: 1px solid rgba(179, 38, 30, 0.25); border-radius: 0; background: none; color: #8f221a;
+  width: 100%; margin-top: 16px; padding: var(--btn-pad-v) var(--btn-pad-h);
+  font-size: var(--btn-font); font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em;
+  border: 2px solid #8f221a; border-radius: 10px; background: #fff; color: #8f221a;
   cursor: pointer;
 }
-.unflag-btn:active { background: rgba(179, 38, 30, 0.08); }
+.unflag-btn:active { background: #8f221a; color: #fff; }
 
 .photo-box { background: #fff; border-radius: 12px; padding: 16px; margin-bottom: 14px; }
 .photo-preview {

@@ -11,7 +11,7 @@
      several minutes (or a hard reload) to actually show up otherwise. Bump
      this string any time app.js or style.css changes so the new file is
      guaranteed to load right away instead of a stale cached copy. -->
-<link rel="stylesheet" href="style.css?v=2026-09-24p">
+<link rel="stylesheet" href="style.css?v=2026-09-24s">
 </head>
 <body>
 
@@ -72,7 +72,13 @@
     <div class="section-title">Racks</div>
     <div class="racks-row">
       <div class="expected">Expected: <strong id="racks-expected-label">-</strong></div>
-      <input type="number" id="racks-unloaded-input" min="0" placeholder="0">
+      <div class="qty-stepper racks-stepper">
+        <input type="text" inputmode="numeric" pattern="[0-9]*" id="racks-unloaded-input" class="qty-input" placeholder="0">
+        <div class="qty-step-group">
+          <button type="button" class="qty-step-btn qty-minus" id="racks-minus-btn">&minus;</button>
+          <button type="button" class="qty-step-btn" id="racks-plus-btn">+</button>
+        </div>
+      </div>
       <span>unloaded</span>
     </div>
 
@@ -137,6 +143,6 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="app.js?v=2026-09-24p"></script>
+<script src="app.js?v=2026-09-24s"></script>
 </body>
 </html>
