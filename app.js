@@ -125,6 +125,22 @@ async function init() {
 
   updateQueueBanner_();
   window.addEventListener("online", () => flushOfflineQueue_());
+  // The browser's "online" event only fires on an actual offline->online
+  // transition. It does NOT fire just because a submit happened to time out
+  // while the device was on wifi the whole time (a slow Apps Script cold
+  // start, say — see the timeout comment in sendToBackend_) — that item
+  // would then sit queued, with the banner saying "will send automatically
+  // when back online," indefinitely, on a connection that was never
+  // actually lost. Two more triggers close that gap: a periodic retry
+  // while anything's queued, and one whenever the driver brings the app
+  // back into view (switching back from another app, waking the screen) —
+  // a natural moment real connectivity is most likely present, and it
+  // doesn't depend on the browser's own (notoriously unreliable on iOS
+  // Safari) online/offline detection at all.
+  setInterval(() => { if (readQueue_().length > 0) flushOfflineQueue_(); }, 30000);
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible" && readQueue_().length > 0) flushOfflineQueue_();
+  });
   // also try once on load in case there's a leftover queue from a prior offline session
   flushOfflineQueue_();
 }
@@ -544,28 +560,41 @@ function wireExceptionsScreen() {
 function openExceptionsScreen_(stop) {
   document.getElementById("exceptions-stop-name").textContent = stop.customer_name;
   renderItemPickList_(stop);
-  renderExceptionForms_();
   showScreen_("screen-exceptions");
 }
 
+// The whole line is the flag toggle (one big tap target, not a separate small
+// "Flag" button), a flagged line turns red end to end, and its reason/qty/
+// notes form expands directly inside that same line — no more a separate
+// "exception-forms" list further down the screen the driver has to scroll to
+// and match back up to the right item by name. See PROJECT-NOTES.md for why.
 function renderItemPickList_(stop) {
   const items = getLineItems_(stop);
   const list = document.getElementById("item-pick-list");
   list.innerHTML = "";
 
   items.forEach((item, idx) => {
+    const flagged = !!flaggedItems[idx];
     const row = document.createElement("div");
-    row.className = "item-pick-row";
+    row.className = "item-pick-row" + (flagged ? " flagged" : "");
+
+    const main = document.createElement("button");
+    main.type = "button";
+    main.className = "item-pick-main";
 
     const label = document.createElement("span");
+    label.className = "item-pick-label";
     label.textContent = item.qty + "x " + item.item_name + (item.size ? " (" + item.size + ")" : "");
+    main.appendChild(label);
 
-    const btn = document.createElement("button");
-    btn.className = "flag";
-    btn.textContent = flaggedItems[idx] ? "Flagged" : "Flag";
-    if (flaggedItems[idx]) btn.classList.add("active");
+    const status = document.createElement("span");
+    status.className = "item-pick-status";
+    status.textContent = flagged ? "Flagged ✕" : "Tap to flag";
+    main.appendChild(status);
 
-    btn.addEventListener("click", () => {
+    // Tapping the line toggles it — flagging seeds a fresh exception entry
+    // (full qty, "Rejected" default), unflagging drops it and its form.
+    main.addEventListener("click", () => {
       if (flaggedItems[idx]) {
         delete flaggedItems[idx];
       } else {
@@ -579,13 +608,14 @@ function renderItemPickList_(stop) {
           notes: "",
         };
       }
-      btn.classList.toggle("active");
-      btn.textContent = flaggedItems[idx] ? "Flagged" : "Flag";
-      renderExceptionForms_();
+      renderItemPickList_(stop);
     });
+    row.appendChild(main);
 
-    row.appendChild(label);
-    row.appendChild(btn);
+    if (flagged) {
+      row.appendChild(buildExceptionInlineForm_(flaggedItems[idx]));
+    }
+
     list.appendChild(row);
   });
 
@@ -594,53 +624,100 @@ function renderItemPickList_(stop) {
   }
 }
 
-function renderExceptionForms_() {
-  const box = document.getElementById("exception-forms");
-  box.innerHTML = "";
+// The reason/qty/notes form for one flagged line, built fresh each render
+// and appended directly under that line's own row (see renderItemPickList_).
+// Every control here stops its click from bubbling up to the row's own
+// flag-toggle handler, so tapping a reason button or the qty field doesn't
+// accidentally unflag the line.
+function buildExceptionInlineForm_(ex) {
+  const form = document.createElement("div");
+  form.className = "exception-inline";
+  form.addEventListener("click", (e) => e.stopPropagation());
 
-  const idxs = Object.keys(flaggedItems);
-  if (idxs.length === 0) {
-    box.innerHTML = '<p class="hint">Nothing flagged yet.</p>';
-    return;
+  const reasonRow = document.createElement("div");
+  reasonRow.className = "reason-btn-row";
+  ["Rejected", "Short", "Damaged", "Substituted", "Other"].forEach((r) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = "reason-btn" + (ex.reason === r ? " selected" : "");
+    btn.textContent = r;
+    btn.addEventListener("click", () => {
+      ex.reason = r;
+      reasonRow.querySelectorAll(".reason-btn").forEach((b) => b.classList.remove("selected"));
+      btn.classList.add("selected");
+    });
+    reasonRow.appendChild(btn);
+  });
+  form.appendChild(reasonRow);
+
+  // Capped at the ordered qty (ex.qty) — can't reject/flag more units of an
+  // item than were actually on the order (see PROJECT-NOTES.md — this needs
+  // enforcing here AND again in submitStop_ as a last-line-of-defense clamp,
+  // since neither a text input's typed value nor a stepper button is a real
+  // constraint on its own).
+  const qtyLabel = document.createElement("label");
+  qtyLabel.className = "qty-affected-label";
+  qtyLabel.textContent = "Qty affected (of " + ex.qty + " ordered)";
+  form.appendChild(qtyLabel);
+
+  const stepper = document.createElement("div");
+  stepper.className = "qty-stepper";
+
+  const minusBtn = document.createElement("button");
+  minusBtn.type = "button";
+  minusBtn.className = "qty-step-btn";
+  minusBtn.textContent = "−";
+  minusBtn.setAttribute("aria-label", "Decrease quantity");
+
+  // type="text" + inputmode="numeric" + pattern="[0-9]*" (not type="number")
+  // is the combination that actually gets a digits-only keypad on iPad
+  // Safari, with no decimal point or +/- key to fumble with — type="number"
+  // alone still shows those. Sanitizing pasted/typed input to digits-only in
+  // the "input" handler below covers anything the keypad restriction misses.
+  const qtyInput = document.createElement("input");
+  qtyInput.type = "text";
+  qtyInput.inputMode = "numeric";
+  qtyInput.pattern = "[0-9]*";
+  qtyInput.className = "qty-input";
+  qtyInput.value = ex.qty_change != null ? String(ex.qty_change) : "";
+
+  const plusBtn = document.createElement("button");
+  plusBtn.type = "button";
+  plusBtn.className = "qty-step-btn";
+  plusBtn.textContent = "+";
+  plusBtn.setAttribute("aria-label", "Increase quantity");
+
+  function setQty_(n) {
+    if (!isFinite(n) || n < 0) n = 0;
+    if (n > ex.qty) {
+      n = ex.qty;
+      showToast("Only " + ex.qty + " of this item were ordered — capped at " + ex.qty + ".");
+    }
+    ex.qty_change = n;
+    qtyInput.value = String(n);
   }
 
-  idxs.forEach((idx) => {
-    const ex = flaggedItems[idx];
-    const row = document.createElement("div");
-    row.className = "exception-row";
-
-    const title = document.createElement("strong");
-    title.textContent = ex.item_name;
-    row.appendChild(title);
-
-    const reasonSelect = document.createElement("select");
-    ["Rejected", "Short", "Damaged", "Substituted", "Other"].forEach((r) => {
-      const opt = document.createElement("option");
-      opt.value = r;
-      opt.textContent = r;
-      if (ex.reason === r) opt.selected = true;
-      reasonSelect.appendChild(opt);
-    });
-    reasonSelect.addEventListener("change", () => { ex.reason = reasonSelect.value; });
-    row.appendChild(reasonSelect);
-
-    const qtyInput = document.createElement("input");
-    qtyInput.type = "number";
-    qtyInput.min = "0";
-    qtyInput.placeholder = "Qty affected";
-    qtyInput.value = ex.qty_change != null ? ex.qty_change : "";
-    qtyInput.addEventListener("input", () => { ex.qty_change = Number(qtyInput.value); });
-    row.appendChild(qtyInput);
-
-    const notesInput = document.createElement("textarea");
-    notesInput.placeholder = "Notes (optional)";
-    notesInput.rows = 2;
-    notesInput.value = ex.notes || "";
-    notesInput.addEventListener("input", () => { ex.notes = notesInput.value; });
-    row.appendChild(notesInput);
-
-    box.appendChild(row);
+  minusBtn.addEventListener("click", () => setQty_((ex.qty_change || 0) - 1));
+  plusBtn.addEventListener("click", () => setQty_((ex.qty_change || 0) + 1));
+  qtyInput.addEventListener("input", () => {
+    const digitsOnly = qtyInput.value.replace(/[^0-9]/g, "");
+    if (digitsOnly !== qtyInput.value) qtyInput.value = digitsOnly;
+    setQty_(digitsOnly === "" ? 0 : parseInt(digitsOnly, 10));
   });
+
+  stepper.appendChild(minusBtn);
+  stepper.appendChild(qtyInput);
+  stepper.appendChild(plusBtn);
+  form.appendChild(stepper);
+
+  const notesInput = document.createElement("textarea");
+  notesInput.placeholder = "Notes (optional)";
+  notesInput.rows = 2;
+  notesInput.value = ex.notes || "";
+  notesInput.addEventListener("input", () => { ex.notes = notesInput.value; });
+  form.appendChild(notesInput);
+
+  return form;
 }
 
 // ==================================================================
@@ -852,13 +929,22 @@ async function submitStop_(wantsSignature) {
   document.getElementById("skip-sig-btn").disabled = true;
 
   const racksUnloaded = currentStop._racksUnloadedEntered;
-  const exceptions = Object.values(flaggedItems).map((ex) => ({
-    item_code: ex.item_code,
-    item_name: ex.item_name,
-    reason: ex.reason,
-    qty_change: ex.qty_change,
-    notes: ex.notes,
-  }));
+  const exceptions = Object.values(flaggedItems).map((ex) => {
+    // Same cap as the qty-affected input in renderExceptionForms_ — enforced
+    // again here as a last line of defense so a submitted exception can
+    // never claim more units were rejected/short/damaged than were ordered,
+    // regardless of how qty_change got set.
+    let qtyChange = Number(ex.qty_change);
+    if (!isFinite(qtyChange) || qtyChange < 0) qtyChange = 0;
+    if (qtyChange > ex.qty) qtyChange = ex.qty;
+    return {
+      item_code: ex.item_code,
+      item_name: ex.item_name,
+      reason: ex.reason,
+      qty_change: qtyChange,
+      notes: ex.notes,
+    };
+  });
 
   // Everything below racks_unloaded is extra context so the backend (Hour 7)
   // can build a proof-of-delivery PDF without a second lookup — the backend
@@ -946,7 +1032,14 @@ async function sendToBackend_(payload) {
   }
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000);
+    // A submit's backend work is a real Drive/Docs/Gmail chain (build the
+    // PDF, save it, email it — see buildAndSavePdf_/sendDeliveryEmail_ in
+    // Code.gs), which can genuinely take longer than a plain API call,
+    // especially on a cold Apps Script start. 15s was cutting that off
+    // early on a perfectly good connection — not a real "no signal" case,
+    // just a slow one — which is exactly what queued it and left the
+    // "waiting to sync" banner showing while on wifi the whole time.
+    const timeout = setTimeout(() => controller.abort(), 30000);
     const res = await fetch(APPS_SCRIPT_URL, {
       method: "POST",
       // text/plain avoids a CORS preflight that Apps Script Web Apps can't answer —

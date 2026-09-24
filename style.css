@@ -138,13 +138,56 @@ button.secondary {
   width: 90px; font-size: 24px; text-align: center; padding: 10px; border: 2px solid #ccc; border-radius: 8px;
 }
 
-.exception-row { background: #fff; border-radius: 10px; padding: 12px; margin-bottom: 10px; }
-.exception-row select, .exception-row input, .exception-row textarea {
-  width: 100%; padding: 8px; font-size: 15px; border: 1px solid #ccc; border-radius: 6px; margin-top: 6px;
+/* Each line item is one big tap target (.item-pick-main, a <button> the full
+   width of the row) rather than a small separate "Flag" button next to inert
+   text — easier to hit reliably in a moving truck. A flagged line turns red
+   end to end (.item-pick-row.flagged) so it reads as an exception at a
+   glance, scrolling past or not. Its reason/qty/notes form expands directly
+   inside that same row (.exception-inline, appended only while flagged) —
+   no separate list further down the screen to scroll to and match back up
+   to the right item by name. */
+.item-pick-row {
+  background: #fff; border-radius: 10px; margin-bottom: 10px; overflow: hidden;
+  border: 2px solid transparent;
 }
-.item-pick-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 4px; border-bottom: 1px solid #eee; }
-.item-pick-row button.flag { border: 2px solid #b3261e; color: #b3261e; background: #fff; border-radius: 8px; padding: 6px 10px; font-size: 13px; cursor: pointer; }
-.item-pick-row button.flag.active { background: #b3261e; color: #fff; }
+.item-pick-row.flagged { background: #fbdedb; border-color: #b3261e; }
+.item-pick-main {
+  width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  padding: 16px; background: none; border: none; text-align: left; font: inherit; color: inherit; cursor: pointer;
+}
+.item-pick-label { font-size: 16px; }
+.item-pick-status {
+  font-size: 13px; font-weight: 700; color: #999; text-transform: uppercase;
+  letter-spacing: 0.02em; flex-shrink: 0; white-space: nowrap;
+}
+.item-pick-row.flagged .item-pick-status { color: #b3261e; }
+
+.exception-inline { padding: 0 16px 16px; border-top: 1px solid rgba(179, 38, 30, 0.25); }
+
+/* Reason picker as a row of pill buttons instead of a <select> — no dropdown
+   to open on a tablet, and the current pick is visible without tapping in. */
+.reason-btn-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.reason-btn {
+  padding: 10px 14px; font-size: 14px; font-weight: 700; border: 2px solid #b3261e; border-radius: 999px;
+  background: #fff; color: #b3261e; cursor: pointer;
+}
+.reason-btn.selected { background: #b3261e; color: #fff; }
+
+.qty-affected-label { display: block; font-size: 13px; color: #7a3630; margin-top: 16px; }
+.qty-stepper { display: flex; align-items: stretch; gap: 8px; margin-top: 6px; }
+.qty-step-btn {
+  flex: 0 0 54px; font-size: 26px; font-weight: 700; line-height: 1; border: 2px solid #999; border-radius: 10px;
+  background: #fff; color: #444; cursor: pointer;
+}
+.qty-step-btn:active { background: #eee; }
+.qty-input {
+  flex: 1; min-width: 0; text-align: center; font-size: 22px; font-weight: 700; padding: 10px;
+  border: 2px solid #ccc; border-radius: 10px; background: #fff;
+}
+
+.exception-inline textarea {
+  width: 100%; padding: 8px; font-size: 15px; border: 1px solid #ccc; border-radius: 6px; margin-top: 14px;
+}
 
 .photo-box { background: #fff; border-radius: 12px; padding: 16px; margin-bottom: 14px; }
 .photo-preview {
@@ -164,7 +207,25 @@ button.secondary {
 
 canvas#sig-pad { width: 100%; height: 220px; background: #fff; border: 2px dashed #999; border-radius: 10px; touch-action: none; }
 
-.bottom-bar { padding: 16px 20px; background: #fff; border-top: 1px solid #ddd; }
+/* Fixed to the viewport (not the end of the scrolling screen content) so the
+   Next/Submit button is always reachable without scrolling down first — on
+   a long stop (lots of line items, several flagged exceptions) it used to
+   sit below the fold. Right-aligned and bigger for an easy one-handed tap.
+   Screens that have a bottom-bar give their <main> matching bottom padding
+   (see the #screen-stop/#screen-exceptions/#screen-signature main rules
+   below) so this fixed bar never covers the last item in a scrolled list. */
+.bottom-bar {
+  position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+  padding: 14px 20px; background: #fff; border-top: 1px solid #ddd;
+  display: flex; justify-content: flex-end; align-items: center; gap: 12px;
+}
+.bottom-bar button.primary {
+  width: auto; min-width: 240px; padding: 22px 34px; font-size: 21px; border-radius: 14px;
+}
+.bottom-bar button.secondary {
+  width: auto; padding: 16px 20px; font-size: 15px; margin-top: 0;
+}
+#screen-stop main, #screen-exceptions main, #screen-signature main { padding-bottom: 130px; }
 
 .toast {
   position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
