@@ -6,7 +6,12 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="CT Delivery">
 <title>CT Delivery App</title>
-<link rel="stylesheet" href="style.css">
+<!-- ?v= on style.css/app.js is a manual cache-buster: GitHub Pages' CDN and
+     the iPad's browser both cache these files, so a plain re-upload can take
+     several minutes (or a hard reload) to actually show up otherwise. Bump
+     this string any time app.js or style.css changes so the new file is
+     guaranteed to load right away instead of a stale cached copy. -->
+<link rel="stylesheet" href="style.css?v=2026-09-24c">
 </head>
 <body>
 
@@ -124,6 +129,6 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="app.js"></script>
+<script src="app.js?v=2026-09-24c"></script>
 </body>
 </html>
