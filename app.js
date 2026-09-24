@@ -66,41 +66,37 @@ async function init() {
   wirePhotoCapture();
   setupSignaturePad();
 
-  const testDate = getTestDateOverride_();
-  const manifestUrl = APPS_SCRIPT_URL + "?action=get_route_plan" + (testDate ? "&date=" + encodeURIComponent(testDate) : "");
-
   let loadedFromCache = false;
   try {
     const [manifestRes, pinsRes] = await Promise.all([
-      fetch(manifestUrl, { cache: "no-store" }),
+      fetch(APPS_SCRIPT_URL + "?action=get_route_plan", { cache: "no-store" }),
       fetch(PINS_FILE, { cache: "no-store" }),
     ]);
     const manifestJson = await manifestRes.json();
     // The backend returns the manifest object directly on success, or
-    // {ok:false, error:"..."} when nothing's been published yet for today
-    // (or the published one is for a different date) — see
-    // getManifestForRequest_ in Code.gs. Surface that message plainly
+    // {ok:false, error:"..."} when nothing's been published yet at all —
+    // see getRoutePlanForRequest_ in Code.gs. Surface that message plainly
     // rather than a generic "check your connection", since this failure
     // usually means the office forgot to publish, not a network problem.
+    // NOTE: as of 2026-09-24 the backend serves whatever route plan is
+    // currently published, whatever date it's for — it no longer checks
+    // that against today (see the TODO comment on getRoutePlanForRequest_
+    // in Code.gs for why, and why that check should come back before this
+    // is relied on for real daily driving). The date actually being shown
+    // is still surfaced honestly below (login-date, the toast on a cache
+    // fallback) — just no longer enforced.
     // Deliberately NOT falling back to the offline cache here — an
     // explicit "nothing published" answer from the server is different
     // from a network failure, and showing yesterday's cached route plan
     // in that case would hide a real office mistake instead of surfacing it.
     if (manifestJson && manifestJson.ok === false) {
-      showToast(manifestJson.error || "No route plan published for today yet.");
+      showToast(manifestJson.error || "No route plan published yet.");
       console.error("manifest fetch returned an error", manifestJson);
       return;
     }
     manifest = manifestJson;
     pins = await pinsRes.json();
-    if (testDate) {
-      // Deliberately NOT saved to the offline route-plan cache — that
-      // cache is what a real driver falls back to if they go offline
-      // later, and it must never end up holding a test date's data.
-      showTestModeBanner_(testDate);
-    } else {
-      saveRoutePlanCache_(manifest, pins);
-    }
+    saveRoutePlanCache_(manifest, pins);
     applyStoredDriverState_();
   } catch (err) {
     // Network-level failure (offline, dead zone, etc.) — fall back to the
@@ -1069,35 +1065,6 @@ function registerServiceWorker_() {
   navigator.serviceWorker.register("service-worker.js").catch((err) => {
     console.warn("service worker registration failed", err);
   });
-}
-
-// ==================================================================
-// TESTING: view an already-published route plan for a date other than
-// today, without touching the real "only ever show today" rule
-// (getRoutePlanForRequest_ in Code.gs already refuses a wrong-date
-// route plan by default — this just opts into a specific date via the
-// URL, the same ?date= param that endpoint has always accepted).
-// ==================================================================
-// Open the app as index.html?test_date=2026-09-23 to preview that date's
-// published route plan (it must already exist — "Create Route Plan..."
-// still has to have been run for that date at some point). With no
-// test_date param, behavior is unchanged: today's plan only.
-function getTestDateOverride_() {
-  const params = new URLSearchParams(location.search);
-  const d = params.get("test_date");
-  return /^\d{4}-\d{2}-\d{2}$/.test(d || "") ? d : null;
-}
-
-// Persistent (not a toast — this needs to stay visible for the whole test
-// session, not disappear after 3 seconds) banner so a test date's data is
-// never mistaken for a real day's. Also flags the one real side effect:
-// submitting from here still writes a real row to the Deliveries Log (and
-// sends a real email unless TEST_MODE is on in Code.gs) — testing with an
-// old date doesn't make a submit itself any less real.
-function showTestModeBanner_(dateStr) {
-  const banner = document.getElementById("test-mode-banner");
-  banner.textContent = "TEST MODE — viewing " + formatDispatchDate_(dateStr) + "'s route plan, not today's. Submitting here still writes a real Deliveries Log row (and a real email unless TEST_MODE is on in Code.gs).";
-  banner.classList.remove("hidden");
 }
 
 // ==================================================================
