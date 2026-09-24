@@ -78,6 +78,7 @@ async function init() {
   }
 
   document.getElementById("login-date").textContent = formatDispatchDate_(manifest.dispatch_date);
+  renderTruckSelect_();
 
   updateQueueBanner_();
   window.addEventListener("online", () => flushOfflineQueue_());
@@ -88,21 +89,59 @@ async function init() {
 // ==================================================================
 // LOGIN SCREEN
 // ==================================================================
-function wireLoginScreen() {
+// Truck buttons are NOT hardcoded. renderTruckSelect_() (called from
+// init() once the route plan has loaded) builds one button per truck
+// that actually has stops in TODAY's published route plan
+// (manifest.trucks, set server-side by publishRoutePlan_ in Code.gs).
+// This is deliberate, not an oversight: a fixed "Truck 4 / Truck 5"
+// list silently left out any other truck ERP-outFuture had assigned
+// stops to — found for real when Truck 3 had a full route and wasn't
+// selectable at all. A truck still needs an entry in pins.json to
+// actually log in (that file is unrelated to which buttons render —
+// see its own comment); a truck that shows up in today's route but
+// has no pins.json entry yet gets its own clear error at login time
+// below, rather than "Wrong PIN."
+function renderTruckSelect_() {
   const truckSelect = document.getElementById("truck-select");
-  const pinInput = document.getElementById("pin-input");
-  const loginBtn = document.getElementById("login-btn");
-  const loginError = document.getElementById("login-error");
+  truckSelect.innerHTML = "";
 
-  truckSelect.querySelectorAll("button[data-truck]").forEach((btn) => {
+  const trucks = (manifest.trucks || []).slice().sort((a, b) => {
+    const na = parseInt((a.match(/\d+/) || ["0"])[0], 10);
+    const nb = parseInt((b.match(/\d+/) || ["0"])[0], 10);
+    return na - nb;
+  });
+
+  if (trucks.length === 0) {
+    truckSelect.innerHTML = '<p class="hint">No trucks have stops in today’s route plan.</p>';
+    return;
+  }
+
+  trucks.forEach((truck) => {
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.textContent = truck;
+    btn.setAttribute("data-truck", truck);
     btn.addEventListener("click", () => {
       truckSelect.querySelectorAll("button").forEach((b) => b.classList.remove("selected"));
       btn.classList.add("selected");
-      selectedTruck = btn.getAttribute("data-truck");
-      loginError.textContent = "";
+      selectedTruck = truck;
+      document.getElementById("login-error").textContent = "";
       updateLoginBtnState_();
     });
+    truckSelect.appendChild(btn);
   });
+}
+
+function updateLoginBtnState_() {
+  const pinInput = document.getElementById("pin-input");
+  const loginBtn = document.getElementById("login-btn");
+  loginBtn.disabled = !(selectedTruck && pinInput.value.trim().length >= 4);
+}
+
+function wireLoginScreen() {
+  const pinInput = document.getElementById("pin-input");
+  const loginBtn = document.getElementById("login-btn");
+  const loginError = document.getElementById("login-error");
 
   pinInput.addEventListener("input", () => {
     // digits only
@@ -113,10 +152,27 @@ function wireLoginScreen() {
 
   loginBtn.addEventListener("click", () => {
     const enteredPin = pinInput.value.trim();
-    const realPin = pins && pins[selectedTruck];
     if (!selectedTruck || !enteredPin) return;
 
-    if (!realPin || enteredPin !== realPin) {
+    if (!pins) {
+      // pins never loaded — either today's route plan hasn't been published yet
+      // (see init()'s manifest fetch, which returns early before loading pins in
+      // that case) or the pins.json/route plan fetch itself failed. Either way,
+      // no PIN could ever match here, so saying "Wrong PIN" would be misleading —
+      // the actual fix is publishing today's route plan or reloading the page.
+      loginError.textContent = "Route data hasn't loaded — check that today's Route Plan has been published, then reload this page.";
+      return;
+    }
+
+    const realPin = pins[selectedTruck];
+    if (!realPin) {
+      // Truck showed up as a button (it has real stops today) but pins.json
+      // doesn't know about it yet — different problem than a wrong PIN, so
+      // it gets its own message per the same rule as the block above.
+      loginError.textContent = selectedTruck + " doesn't have a PIN set up yet — add one to pins.json.";
+      return;
+    }
+    if (enteredPin !== realPin) {
       loginError.textContent = "Wrong PIN for " + selectedTruck + ". Try again.";
       pinInput.value = "";
       updateLoginBtnState_();
@@ -128,10 +184,6 @@ function wireLoginScreen() {
     loginError.textContent = "";
     openRouteScreen_();
   });
-
-  function updateLoginBtnState_() {
-    loginBtn.disabled = !(selectedTruck && pinInput.value.trim().length >= 4);
-  }
 }
 
 // ==================================================================

@@ -19,10 +19,10 @@
     <div class="login-box">
       <h2>Driver Login</h2>
       <p class="hint" id="login-date"></p>
-      <div class="truck-select" id="truck-select">
-        <button data-truck="Truck 4">Truck 4</button>
-        <button data-truck="Truck 5">Truck 5</button>
-      </div>
+      <!-- Populated dynamically by renderTruckSelect_() in app.js from
+           today's published route plan (manifest.trucks) — not hardcoded,
+           so any truck with real stops shows up automatically. -->
+      <div class="truck-select" id="truck-select"></div>
       <input class="pin-input" id="pin-input" type="tel" inputmode="numeric" maxlength="4" placeholder="PIN">
       <button class="primary" id="login-btn" disabled>Start Route</button>
       <div class="error-msg" id="login-error"></div>
