@@ -1,5 +1,22 @@
 /* CT Delivery App — minimal styling, tuned for iPad in a truck cab: big tap targets, high contrast, no hover-dependent UI. */
 
+:root {
+  /* Button sizing scales with the viewport (clamp(min, preferred-vw, max))
+     instead of a fixed px value, so a tap target is genuinely big on a
+     small iPhone screen AND on a full-size iPad, rather than a one-size
+     that's cramped on one and oversized on the other. Two scales: the
+     "lg" set is for the single most important action on a screen (the
+     bottom-bar Next/Submit button); the base set is everything else a
+     driver taps repeatedly — still noticeably bigger than a typical web
+     button, on purpose, for a moving truck cab, not a desk. */
+  --btn-font: clamp(17px, 2.4vw, 22px);
+  --btn-pad-v: clamp(16px, 2.6vw, 22px);
+  --btn-pad-h: clamp(20px, 3.4vw, 30px);
+  --btn-font-lg: clamp(20px, 3.2vw, 27px);
+  --btn-pad-v-lg: clamp(18px, 3.2vw, 26px);
+  --btn-pad-h-lg: clamp(24px, 4.4vw, 40px);
+}
+
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 
 body {
@@ -28,9 +45,9 @@ header.app-bar button.back {
   background: rgba(255, 255, 255, 0.16);
   border: none;
   color: #fff;
-  font-size: 15px;
+  font-size: clamp(15px, 1.9vw, 18px);
   font-weight: 600;
-  padding: 10px 14px;
+  padding: clamp(10px, 1.6vw, 14px) clamp(14px, 2.2vw, 18px);
   border-radius: 8px;
   cursor: pointer;
   flex-shrink: 0;
@@ -40,9 +57,9 @@ header.app-bar button.logout-btn {
   background: none;
   border: 1px solid rgba(255, 255, 255, 0.5);
   color: #fff;
-  font-size: 14px;
+  font-size: clamp(14px, 1.7vw, 16px);
   font-weight: 600;
-  padding: 8px 14px;
+  padding: clamp(8px, 1.4vw, 12px) clamp(14px, 2vw, 16px);
   border-radius: 8px;
   cursor: pointer;
   flex-shrink: 0;
@@ -56,21 +73,21 @@ main { flex: 1; padding: 20px; overflow-y: auto; }
 .login-box p.hint { color: #666; margin-top: 0; }
 .truck-select { display: flex; gap: 12px; justify-content: center; margin: 20px 0; }
 .truck-select button {
-  flex: 1; padding: 16px; font-size: 18px; border: 2px solid #2f5233; border-radius: 10px;
-  background: #fff; color: #2f5233; cursor: pointer; font-weight: 600;
+  flex: 1; padding: var(--btn-pad-v) var(--btn-pad-h); font-size: var(--btn-font); border: 2px solid #2f5233; border-radius: 10px;
+  background: #fff; color: #2f5233; cursor: pointer; font-weight: 700;
 }
 .truck-select button.selected { background: #2f5233; color: #fff; }
 input.pin-input {
-  width: 100%; font-size: 28px; letter-spacing: 8px; text-align: center; padding: 14px;
+  width: 100%; font-size: clamp(26px, 6vw, 34px); letter-spacing: 8px; text-align: center; padding: var(--btn-pad-v);
   border: 2px solid #ccc; border-radius: 10px; margin: 16px 0;
 }
 button.primary {
-  width: 100%; padding: 16px; font-size: 18px; font-weight: 600; border: none; border-radius: 10px;
+  width: 100%; padding: var(--btn-pad-v-lg) var(--btn-pad-h-lg); font-size: var(--btn-font-lg); font-weight: 700; border: none; border-radius: 12px;
   background: #2f5233; color: #fff; cursor: pointer;
 }
 button.primary:disabled { background: #aab; cursor: default; opacity: 0.6; }
 button.secondary {
-  width: 100%; padding: 14px; font-size: 16px; font-weight: 600; border: 2px solid #999; border-radius: 10px;
+  width: 100%; padding: var(--btn-pad-v) var(--btn-pad-h); font-size: var(--btn-font); font-weight: 700; border: 2px solid #999; border-radius: 10px;
   background: #fff; color: #444; cursor: pointer; margin-top: 10px;
 }
 .error-msg { color: #b3261e; margin-top: 10px; font-size: 15px; }
@@ -132,10 +149,11 @@ button.secondary {
 
 .section-title { font-size: 15px; text-transform: uppercase; color: #666; margin: 20px 0 8px; font-weight: 700; }
 
-.racks-row { display: flex; align-items: center; gap: 16px; background: #fff; padding: 16px; border-radius: 12px; }
-.racks-row .expected { font-size: 16px; color: #444; }
+.racks-row { display: flex; align-items: center; gap: 16px; background: #fff; padding: var(--btn-pad-v); border-radius: 12px; }
+.racks-row .expected { font-size: var(--btn-font); color: #444; }
 .racks-row input[type=number] {
-  width: 90px; font-size: 24px; text-align: center; padding: 10px; border: 2px solid #ccc; border-radius: 8px;
+  width: clamp(90px, 16vw, 120px); font-size: var(--btn-font-lg); text-align: center; padding: var(--btn-pad-v);
+  border: 2px solid #ccc; border-radius: 8px;
 }
 
 /* Each line item is one big tap target (.item-pick-main, a <button> the full
@@ -153,11 +171,11 @@ button.secondary {
 .item-pick-row.flagged { background: #fbdedb; border-color: #b3261e; }
 .item-pick-main {
   width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 12px;
-  padding: 16px; background: none; border: none; text-align: left; font: inherit; color: inherit; cursor: pointer;
+  padding: var(--btn-pad-v) clamp(16px, 2.6vw, 22px); background: none; border: none; text-align: left; font: inherit; color: inherit; cursor: pointer;
 }
-.item-pick-label { font-size: 16px; }
+.item-pick-label { font-size: var(--btn-font); }
 .item-pick-status {
-  font-size: 13px; font-weight: 700; color: #999; text-transform: uppercase;
+  font-size: clamp(13px, 1.6vw, 15px); font-weight: 700; color: #999; text-transform: uppercase;
   letter-spacing: 0.02em; flex-shrink: 0; white-space: nowrap;
 }
 .item-pick-row.flagged .item-pick-status { color: #b3261e; }
@@ -166,28 +184,48 @@ button.secondary {
 
 /* Reason picker as a row of pill buttons instead of a <select> — no dropdown
    to open on a tablet, and the current pick is visible without tapping in. */
-.reason-btn-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.reason-btn-row { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
 .reason-btn {
-  padding: 10px 14px; font-size: 14px; font-weight: 700; border: 2px solid #b3261e; border-radius: 999px;
-  background: #fff; color: #b3261e; cursor: pointer;
+  padding: clamp(11px, 2vw, 15px) clamp(16px, 2.8vw, 20px); font-size: clamp(15px, 1.9vw, 17px); font-weight: 700;
+  border: 2px solid #b3261e; border-radius: 999px; background: #fff; color: #b3261e; cursor: pointer;
 }
 .reason-btn.selected { background: #b3261e; color: #fff; }
 
 .qty-affected-label { display: block; font-size: 13px; color: #7a3630; margin-top: 16px; }
-.qty-stepper { display: flex; align-items: stretch; gap: 8px; margin-top: 6px; }
-.qty-step-btn {
-  flex: 0 0 54px; font-size: 26px; font-weight: 700; line-height: 1; border: 2px solid #999; border-radius: 10px;
-  background: #fff; color: #444; cursor: pointer;
-}
-.qty-step-btn:active { background: #eee; }
+/* Input first, +/- grouped together as one joined control after it — not
+   flanking the input on both sides — so a driver can hit minus/plus
+   repeatedly without having to move their thumb across the number itself. */
+.qty-stepper { display: flex; align-items: stretch; gap: 10px; margin-top: 6px; }
 .qty-input {
-  flex: 1; min-width: 0; text-align: center; font-size: 22px; font-weight: 700; padding: 10px;
+  flex: 1; min-width: 0; text-align: center; font-size: var(--btn-font-lg); font-weight: 700; padding: var(--btn-pad-v);
   border: 2px solid #ccc; border-radius: 10px; background: #fff;
 }
+.qty-step-group {
+  display: flex; flex: 0 0 auto; border: 2px solid #999; border-radius: 12px; overflow: hidden;
+}
+.qty-step-btn {
+  flex: 0 0 clamp(58px, 13vw, 80px); font-size: clamp(26px, 5vw, 34px); font-weight: 700; line-height: 1;
+  border: none; background: #fff; color: #444; cursor: pointer;
+}
+.qty-step-btn.qty-minus { border-right: 2px solid #999; }
+.qty-step-btn:active { background: #eee; }
 
 .exception-inline textarea {
   width: 100%; padding: 8px; font-size: 15px; border: 1px solid #ccc; border-radius: 6px; margin-top: 14px;
 }
+
+/* The one deliberate way to unflag a line — separate from, and visually
+   quieter than, the reason/qty controls above it, so it isn't mistaken for
+   part of filling in the exception's details. Tapping the row itself only
+   collapses/expands this form now (see renderItemPickList_'s comment) —
+   this button is what actually removes the flag. */
+.unflag-btn {
+  width: 100%; margin-top: 16px; padding: clamp(12px, 2vw, 16px);
+  font-size: clamp(14px, 1.8vw, 16px); font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em;
+  border: none; border-top: 1px solid rgba(179, 38, 30, 0.25); border-radius: 0; background: none; color: #8f221a;
+  cursor: pointer;
+}
+.unflag-btn:active { background: rgba(179, 38, 30, 0.08); }
 
 .photo-box { background: #fff; border-radius: 12px; padding: 16px; margin-bottom: 14px; }
 .photo-preview {
@@ -217,15 +255,19 @@ canvas#sig-pad { width: 100%; height: 220px; background: #fff; border: 2px dashe
 .bottom-bar {
   position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
   padding: 14px 20px; background: #fff; border-top: 1px solid #ddd;
-  display: flex; justify-content: flex-end; align-items: center; gap: 12px;
+  display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; gap: 12px;
 }
 .bottom-bar button.primary {
-  width: auto; min-width: 240px; padding: 22px 34px; font-size: 21px; border-radius: 14px;
+  width: auto; min-width: clamp(200px, 36vw, 300px); padding: var(--btn-pad-v-lg) var(--btn-pad-h-lg);
+  font-size: var(--btn-font-lg); border-radius: 14px;
 }
 .bottom-bar button.secondary {
-  width: auto; padding: 16px 20px; font-size: 15px; margin-top: 0;
+  width: auto; padding: var(--btn-pad-v) var(--btn-pad-h); font-size: var(--btn-font); margin-top: 0;
 }
-#screen-stop main, #screen-exceptions main, #screen-signature main { padding-bottom: 130px; }
+/* Generous enough that two stacked bottom-bar buttons (signature screen:
+   Submit + Submit Without Signature) wrapping to two lines on a narrow
+   phone still clear the last item in a scrolled list underneath. */
+#screen-stop main, #screen-exceptions main, #screen-signature main { padding-bottom: 190px; }
 
 .toast {
   position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);

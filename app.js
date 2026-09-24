@@ -563,11 +563,14 @@ function openExceptionsScreen_(stop) {
   showScreen_("screen-exceptions");
 }
 
-// The whole line is the flag toggle (one big tap target, not a separate small
-// "Flag" button), a flagged line turns red end to end, and its reason/qty/
-// notes form expands directly inside that same line — no more a separate
-// "exception-forms" list further down the screen the driver has to scroll to
-// and match back up to the right item by name. See PROJECT-NOTES.md for why.
+// The whole line is one big tap target (not a separate small "Flag" button),
+// a flagged line turns red end to end, and its reason/qty/notes form expands
+// directly inside that same line — no separate "exception-forms" list
+// further down the screen to scroll to and match back up to the right item
+// by name. Tapping the line flags it (first tap) or just collapses/expands
+// its already-flagged form (every tap after that) — it never unflags; see
+// the row click handler below and buildExceptionInlineForm_'s "Remove Flag"
+// button for why that's a separate, deliberate action. See PROJECT-NOTES.md.
 function renderItemPickList_(stop) {
   const items = getLineItems_(stop);
   const list = document.getElementById("item-pick-list");
@@ -587,16 +590,23 @@ function renderItemPickList_(stop) {
     label.textContent = item.qty + "x " + item.item_name + (item.size ? " (" + item.size + ")" : "");
     main.appendChild(label);
 
+    const expanded = flagged && flaggedItems[idx].expanded;
     const status = document.createElement("span");
     status.className = "item-pick-status";
-    status.textContent = flagged ? "Flagged ✕" : "Tap to flag";
+    status.textContent = !flagged ? "Tap to flag" : (expanded ? "Flagged ▾" : "Flagged ▸");
     main.appendChild(status);
 
-    // Tapping the line toggles it — flagging seeds a fresh exception entry
-    // (full qty, "Rejected" default), unflagging drops it and its form.
+    // Tapping the line only ever flags it (first tap) or collapses/expands
+    // its already-flagged form (every tap after that) — it never unflags.
+    // That was a real problem: a driver tapping the line again just to
+    // shrink it back down (once the reason/qty/notes were filled in, to see
+    // more of the list without scrolling) was silently deleting the whole
+    // exception. Unflagging now only happens via the explicit "Remove Flag"
+    // button inside the expanded form (see buildExceptionInlineForm_) — a
+    // deliberate action, not a side effect of tidying up the view.
     main.addEventListener("click", () => {
       if (flaggedItems[idx]) {
-        delete flaggedItems[idx];
+        flaggedItems[idx].expanded = !flaggedItems[idx].expanded;
       } else {
         flaggedItems[idx] = {
           item_code: item.item_code || "",
@@ -606,14 +616,15 @@ function renderItemPickList_(stop) {
           reason: "Rejected",
           qty_change: item.qty,
           notes: "",
+          expanded: true,
         };
       }
       renderItemPickList_(stop);
     });
     row.appendChild(main);
 
-    if (flagged) {
-      row.appendChild(buildExceptionInlineForm_(flaggedItems[idx]));
+    if (expanded) {
+      row.appendChild(buildExceptionInlineForm_(flaggedItems[idx], idx, stop));
     }
 
     list.appendChild(row);
@@ -627,9 +638,9 @@ function renderItemPickList_(stop) {
 // The reason/qty/notes form for one flagged line, built fresh each render
 // and appended directly under that line's own row (see renderItemPickList_).
 // Every control here stops its click from bubbling up to the row's own
-// flag-toggle handler, so tapping a reason button or the qty field doesn't
-// accidentally unflag the line.
-function buildExceptionInlineForm_(ex) {
+// collapse/expand handler, so tapping a reason button or the qty field just
+// changes that field, nothing more.
+function buildExceptionInlineForm_(ex, idx, stop) {
   const form = document.createElement("div");
   form.className = "exception-inline";
   form.addEventListener("click", (e) => e.stopPropagation());
@@ -665,7 +676,7 @@ function buildExceptionInlineForm_(ex) {
 
   const minusBtn = document.createElement("button");
   minusBtn.type = "button";
-  minusBtn.className = "qty-step-btn";
+  minusBtn.className = "qty-step-btn qty-minus";
   minusBtn.textContent = "−";
   minusBtn.setAttribute("aria-label", "Decrease quantity");
 
@@ -705,9 +716,17 @@ function buildExceptionInlineForm_(ex) {
     setQty_(digitsOnly === "" ? 0 : parseInt(digitsOnly, 10));
   });
 
-  stepper.appendChild(minusBtn);
+  // Input first, then minus/plus grouped together as one joined control
+  // (.qty-step-group) after it — not flanking the input on both sides — so
+  // a driver can tap minus/plus repeatedly without moving their thumb
+  // across the number itself. See PROJECT-NOTES.md.
+  const stepGroup = document.createElement("div");
+  stepGroup.className = "qty-step-group";
+  stepGroup.appendChild(minusBtn);
+  stepGroup.appendChild(plusBtn);
+
   stepper.appendChild(qtyInput);
-  stepper.appendChild(plusBtn);
+  stepper.appendChild(stepGroup);
   form.appendChild(stepper);
 
   const notesInput = document.createElement("textarea");
@@ -716,6 +735,19 @@ function buildExceptionInlineForm_(ex) {
   notesInput.value = ex.notes || "";
   notesInput.addEventListener("input", () => { ex.notes = notesInput.value; });
   form.appendChild(notesInput);
+
+  // The one and only way to actually unflag this line — see the comment on
+  // the row's click handler in renderItemPickList_ for why tapping the row
+  // itself no longer does this.
+  const unflagBtn = document.createElement("button");
+  unflagBtn.type = "button";
+  unflagBtn.className = "unflag-btn";
+  unflagBtn.textContent = "Remove Flag";
+  unflagBtn.addEventListener("click", () => {
+    delete flaggedItems[idx];
+    renderItemPickList_(stop);
+  });
+  form.appendChild(unflagBtn);
 
   return form;
 }
