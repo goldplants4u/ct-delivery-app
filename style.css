@@ -75,7 +75,10 @@ main { flex: 1; padding: 20px; overflow-y: auto; }
 .truck-select button {
   flex: 1; padding: var(--btn-pad-v) var(--btn-pad-h); font-size: var(--btn-font); border: 2px solid #2f5233; border-radius: 10px;
   background: #fff; color: #2f5233; cursor: pointer; font-weight: 700;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
 }
+.truck-select button .truck-name { display: block; }
+.truck-select button .truck-driver { display: block; font-size: 0.6em; font-weight: 400; opacity: 0.8; }
 .truck-select button.selected { background: #2f5233; color: #fff; }
 input.pin-input {
   width: 100%; font-size: clamp(26px, 6vw, 34px); letter-spacing: 8px; text-align: center; padding: var(--btn-pad-v);
@@ -91,6 +94,11 @@ button.secondary {
   background: #fff; color: #444; cursor: pointer; margin-top: 10px;
 }
 .error-msg { color: #b3261e; margin-top: 10px; font-size: 15px; }
+
+.briefing-box { max-width: 380px; margin: 60px auto; text-align: center; }
+.briefing-box h2 { margin-bottom: 20px; }
+.briefing-stat { color: #333; font-size: 18px; margin: 10px 0; }
+.briefing-box button.primary { margin-top: 24px; }
 
 .stop-card {
   background: #fff; border-radius: 12px; padding: 16px 18px; margin-bottom: 14px;
@@ -120,32 +128,6 @@ button.secondary {
 
 .print-pdf-row { margin-bottom: 4px; }
 .print-pdf-row .secondary { width: 100%; }
-
-/* Flex rows, not a <table>. A table (even table-layout:fixed) pins the last
-   column to the far right edge of the full-width table, which for a short
-   item name leaves a huge empty gap before the size — and forces the Total
-   row's dollar figure into that same fixed-width column, where a real total
-   like "$1,234.56" doesn't fit and gets hard-wrapped mid-digit. Flex items
-   are sized to their own content instead: qty is a fixed slot, the name
-   takes only the room its text needs (shrinking/wrapping if the row is
-   tight), and the size sits right after it with a small fixed gap — so any
-   leftover space lands at the end of the row, not between the name and the
-   size. Also permanently avoids the earlier colspan+flex-in-a-table-cell
-   combination that broke on real iPad Safari (see PROJECT-NOTES.md) —
-   there's no table cell here at all, so that failure mode can't recur. */
-.line-items-list { margin-top: 12px; font-size: 15px; }
-.li-header, .li-row {
-  display: flex; align-items: baseline; gap: 10px;
-  padding: 10px 6px; border-bottom: 1px solid #e2e2e2;
-}
-.li-header { color: #666; font-size: 12px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.03em; }
-.li-qty { flex: 0 0 26px; font-weight: 600; }
-.li-header .li-qty { font-weight: 700; }
-.li-name { flex: 0 1 auto; min-width: 0; overflow-wrap: break-word; }
-.li-size { flex: 0 0 auto; margin-left: 8px; color: #777; white-space: nowrap; }
-.li-row.total-row { border-bottom: none; padding-top: 14px; font-weight: 700; justify-content: flex-end; }
-.total-label { flex: 0 0 auto; }
-.total-value { flex: 0 0 auto; white-space: nowrap; }
 
 .section-title { font-size: 15px; text-transform: uppercase; color: #666; margin: 20px 0 8px; font-weight: 700; }
 

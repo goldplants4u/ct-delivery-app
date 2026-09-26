@@ -54,6 +54,8 @@ let pins = null;
 let manifestReadyPromise_ = null; // set once in init() to loadFullRoutePlan_()'s promise; the login button handler awaits this if the driver taps "Start Route" before the full route plan has finished loading in the background — see both places below
 let selectedTruck = null;   // truck chosen on login screen, before PIN is confirmed
 let currentTruck = null;    // truck the driver is logged into
+let truckDriverNames_ = {}; // {"Truck 4": "Jeremy"} — from the same get_trucks payload as the login screen's truck buttons; kept around for the briefing screen's greeting
+let truckStartTimes_ = {};  // {"Truck 4": "6:00 AM"} — same deal, for the briefing screen's "plan is to leave at" line
 let currentStop = null;     // the stop object currently open in stop/exceptions/signature screens
 let flaggedItems = {};      // idx -> {item_code, item_name, size, qty, reason, qty_change, notes}
 let sigPad = { ctx: null, drawing: false, hasStroke: false };
@@ -66,9 +68,9 @@ async function init() {
   registerServiceWorker_();
 
   wireLoginScreen();
+  wireBriefingScreen();
   wireRouteScreen();
   wireStopScreen();
-  wireExceptionsScreen();
   wireSignatureScreen();
   wirePhotoCapture();
   setupSignaturePad();
@@ -142,7 +144,11 @@ async function init() {
   }
 
   document.getElementById("login-date").textContent = formatDispatchDate_(trucksData.dispatch_date);
-  renderTruckSelect_(trucksData.trucks || []);
+  renderTruckSelect_(trucksData.trucks || [], trucksData.truck_drivers || {});
+  // Kept around (not just used inline above) for the briefing screen, which
+  // needs the same driver-name/start-time lookups after login.
+  truckDriverNames_ = trucksData.truck_drivers || {};
+  truckStartTimes_ = trucksData.truck_start_times || {};
   if (trucksCacheReason === "offline") {
     showToast("Offline — showing the last truck list loaded (" + formatDispatchDate_(trucksData.dispatch_date) + "). Trucks running today may have changed.");
   } else if (trucksCacheReason === "not_published") {
@@ -228,18 +234,26 @@ async function loadFullRoutePlan_(cachedPlan) {
 // ==================================================================
 // LOGIN SCREEN
 // ==================================================================
-// Truck buttons are NOT hardcoded. renderTruckSelect_(trucks) (called from
-// init() once the fast get_trucks fetch resolves — see the two-phase load
-// comment in init()) builds one button per truck that actually has stops
-// in TODAY's published route plan. This is deliberate, not an oversight: a
-// fixed "Truck 4 / Truck 5" list silently left out any other truck
-// ERP-outFuture had assigned stops to — found for real when Truck 3 had a
-// full route and wasn't selectable at all. A truck still needs an entry in
-// pins.json to actually log in (that file is unrelated to which buttons
-// render — see its own comment); a truck that shows up in today's route
-// but has no pins.json entry yet gets its own clear error at login time
-// below, rather than "Wrong PIN."
-function renderTruckSelect_(trucksIn) {
+// Truck buttons are NOT hardcoded. renderTruckSelect_(trucks, truckDrivers)
+// (called from init() once the fast get_trucks fetch resolves — see the
+// two-phase load comment in init()) builds one button per truck that
+// actually has stops in TODAY's published route plan. This is deliberate,
+// not an oversight: a fixed "Truck 4 / Truck 5" list silently left out any
+// other truck ERP-outFuture had assigned stops to — found for real when
+// Truck 3 had a full route and wasn't selectable at all. A truck still
+// needs an entry in pins.json to actually log in (that file is unrelated
+// to which buttons render — see its own comment); a truck that shows up
+// in today's route but has no pins.json entry yet gets its own clear
+// error at login time below, rather than "Wrong PIN."
+//
+// truckDrivers (e.g. {"Truck 4": "Jeremy"}) comes from the same
+// get_trucks/route-plan payload as `trucks` — set server-side in
+// publishRoutePlan_ from each stop's driver_name column, so it's already
+// there for free. Shown as a small second line under the truck name (per
+// G's request) so a driver can visually confirm "yes, that's my truck"
+// against a name, not just a number — several trucks look alike and
+// numbers alone have been mis-tapped before.
+function renderTruckSelect_(trucksIn, truckDrivers) {
   const truckSelect = document.getElementById("truck-select");
   truckSelect.innerHTML = "";
 
@@ -257,8 +271,21 @@ function renderTruckSelect_(trucksIn) {
   trucks.forEach((truck) => {
     const btn = document.createElement("button");
     btn.type = "button";
-    btn.textContent = truck;
     btn.setAttribute("data-truck", truck);
+
+    const nameSpan = document.createElement("span");
+    nameSpan.className = "truck-name";
+    nameSpan.textContent = truck;
+    btn.appendChild(nameSpan);
+
+    const driverName = truckDrivers && truckDrivers[truck];
+    if (driverName) {
+      const driverSpan = document.createElement("span");
+      driverSpan.className = "truck-driver";
+      driverSpan.textContent = driverName;
+      btn.appendChild(driverSpan);
+    }
+
     btn.addEventListener("click", () => {
       truckSelect.querySelectorAll("button").forEach((b) => b.classList.remove("selected"));
       btn.classList.add("selected");
@@ -340,8 +367,85 @@ function wireLoginScreen() {
     currentTruck = selectedTruck;
     pinInput.value = "";
     loginError.textContent = "";
-    openRouteScreen_();
+    openBriefingScreen_();
   });
+}
+
+// ==================================================================
+// BRIEFING SCREEN (shown right after login, before the route list)
+// ==================================================================
+// G's request: a quick "here's your day" screen before the driver sees any
+// stops, with a "Start Driving" button that's the actual moment the office
+// wants logged as the route's real start time — see startRoute_ below,
+// which writes to the Route Timing sheet via a new start_route action
+// (Code.gs handleStartRoute_), so planned vs. actual can be compared later.
+function wireBriefingScreen() {
+  document.getElementById("start-driving-btn").addEventListener("click", () => {
+    startRoute_();
+  });
+  // Independent copy of wireRouteScreen()'s logout handler — a driver who
+  // taps "Log out" from the briefing screen (before ever tapping Start
+  // Driving) should be able to back out the same way, without this screen
+  // depending on the route screen's button/handler existing.
+  document.getElementById("briefing-logout-btn").addEventListener("click", () => {
+    currentTruck = null;
+    selectedTruck = null;
+    document.getElementById("truck-select").querySelectorAll("button").forEach((b) => b.classList.remove("selected"));
+    document.getElementById("login-btn").disabled = true;
+    showScreen_("screen-login");
+  });
+}
+
+function openBriefingScreen_() {
+  const driverName = truckDriverNames_[currentTruck] || currentTruck;
+  document.getElementById("briefing-truck-title").textContent = currentTruck;
+  document.getElementById("briefing-date-sub").textContent = formatDispatchDate_(manifest.dispatch_date);
+  document.getElementById("briefing-greeting").textContent = greetingForPacificTime_() + ", " + driverName + "!";
+
+  const stopCount = manifest.stops.filter((s) => s.truck === currentTruck).length;
+  document.getElementById("briefing-stop-count").textContent =
+    "You have " + stopCount + (stopCount === 1 ? " stop" : " stops") + " today.";
+
+  const leaveTime = truckStartTimes_[currentTruck];
+  document.getElementById("briefing-leave-time").textContent = leaveTime
+    ? "The plan is to leave at " + leaveTime + "."
+    : "No planned leave time set for " + currentTruck + " today.";
+
+  showScreen_("screen-briefing");
+}
+
+// Checked in Pacific time explicitly (business operates in Pacific), not
+// whatever timezone the driver's iPad happens to be set to.
+function greetingForPacificTime_() {
+  const hour = parseInt(
+    new Intl.DateTimeFormat("en-US", { timeZone: "America/Los_Angeles", hour: "numeric", hour12: false }).format(new Date()),
+    10
+  );
+  if (hour < 12) return "Good morning";
+  if (hour < 18) return "Good afternoon";
+  return "Good evening";
+}
+
+// Logs the actual route-start time to the Route Timing sheet (best-effort,
+// via the same offline queue as stop submits — see OFFLINE QUEUE below) and
+// moves straight to the route list. Doesn't wait on the network: the driver
+// tapping "Start Driving" should never be blocked by a slow/dead connection,
+// same reasoning as submitStop_.
+function startRoute_() {
+  const driverName = truckDriverNames_[currentTruck] || currentTruck;
+  const stopCount = manifest.stops.filter((s) => s.truck === currentTruck).length;
+  const payload = {
+    action: "start_route",
+    date: manifest.dispatch_date,
+    truck: currentTruck,
+    driver_name: driverName,
+    stop_count: stopCount,
+    planned_leave_time: truckStartTimes_[currentTruck] || "", // for the backend's planned-vs-actual diff (Route Timing sheet)
+    started_at_iso: new Date().toISOString(),
+  };
+  queueOffline_(payload);
+  flushOfflineQueue_();
+  openRouteScreen_();
 }
 
 // ==================================================================
@@ -445,7 +549,7 @@ function wireStopScreen() {
     // numeric validation of its own, so strip anything non-digit as it's typed.
     const digitsOnly = racksInput.value.replace(/[^0-9]/g, "");
     if (digitsOnly !== racksInput.value) racksInput.value = digitsOnly;
-    const btn = document.getElementById("to-exceptions-btn");
+    const btn = document.getElementById("to-signature-btn");
     btn.disabled = racksInput.value === "" || Number(racksInput.value) < 0;
     renderStopWarnings_();
   });
@@ -466,10 +570,14 @@ function wireStopScreen() {
     setRacksUnloaded_((racksInput.value === "" ? 0 : Number(racksInput.value)) + 1);
   });
 
-  document.getElementById("to-exceptions-btn").addEventListener("click", () => {
+  // Racks + exceptions now live on the same screen (see the HTML comment on
+  // screen-stop) — this button used to lead to a separate "Exceptions"
+  // screen; it now goes straight to Signature, since flagging happens
+  // in-place on this same page via renderItemPickList_/buildExceptionInlineForm_.
+  document.getElementById("to-signature-btn").addEventListener("click", () => {
     if (!currentStop) return;
     currentStop._racksUnloadedEntered = Number(document.getElementById("racks-unloaded-input").value);
-    openExceptionsScreen_(currentStop);
+    openSignatureScreen_(currentStop);
   });
 
   document.getElementById("print-pdf-btn").addEventListener("click", () => {
@@ -509,18 +617,29 @@ function openStopScreen_(stop) {
     stop.address + " · Order" + ((stop.orders || []).length === 1 ? "" : "s") + " " + orderNums +
     " · " + (stop.payment_terms || "");
 
-  renderLineItemsTable_(stop);
-
   const pdfFileId = stop.driver_state && stop.driver_state.pdf_file_id;
   document.getElementById("print-pdf-row").classList.toggle("hidden", !pdfFileId);
 
   document.getElementById("racks-expected-label").textContent = stop.racks_expected != null ? stop.racks_expected : "-";
   const racksInput = document.getElementById("racks-unloaded-input");
-  const savedRacks = stop.driver_state && stop.driver_state.racks_unloaded;
+  // driver_state.racks_unloaded (post-submit truth) wins if it's there;
+  // otherwise fall back to _racksUnloadedEntered (set when "Next: Signature"
+  // was tapped, before ever reaching the backend) — without this fallback,
+  // tapping "Back" from the signature screen mid-flow silently blanked the
+  // racks count the driver had already entered, on the very next screen
+  // back, which is now a one-tap trip since Signature's back button leads
+  // straight here (used to take two back-taps through the old separate
+  // Exceptions screen, so it was far less likely to actually come up).
+  const savedRacks = (stop.driver_state && stop.driver_state.racks_unloaded != null)
+    ? stop.driver_state.racks_unloaded
+    : stop._racksUnloadedEntered;
   racksInput.value = savedRacks != null ? savedRacks : "";
-  document.getElementById("to-exceptions-btn").disabled = racksInput.value === "";
+  document.getElementById("to-signature-btn").disabled = racksInput.value === "";
 
   renderStopWarnings_();
+  // Item list doubles as the invoice review (each row already shows
+  // qty/item/size) and the exception-flagging UI — see renderItemPickList_.
+  renderItemPickList_(stop);
   showScreen_("screen-stop");
 }
 
@@ -564,79 +683,6 @@ function getStopDeliveryFee_(stop) {
   return null;
 }
 
-// Qty / Item / Size as flex rows (divs, not a <table>). A table — even with
-// table-layout:fixed — pins the size column to the far right edge of the
-// full-width table, which for a short item name left a big empty gap before
-// the size, and forced the Total row's dollar figure into that same
-// fixed-width column where a real total (e.g. "$1,234.56") didn't fit and
-// got hard-wrapped mid-digit on a real iPad. Flex items size to their own
-// content instead: qty is a fixed slot, the name takes only the room its
-// text needs, and the size sits right after it with a small fixed gap — so
-// any leftover space lands at the end of the row, not between the name and
-// size. See the CSS comment on .line-items-list for the full rationale
-// (including why this also can't repeat the earlier colspan+flex-in-a-
-// table-cell bug — there's no table cell at all anymore).
-// The internal item code (e.g. "10beagua") is dropped from the driver view
-// entirely — it's an office/GrowFlo matching detail, not something a driver
-// acts on (see the "office-side data-quality flags" note in
-// renderStopWarnings_ just below for the same driver-vs-office principle).
-function renderLineItemsTable_(stop) {
-  const items = getLineItems_(stop);
-  const list = document.getElementById("line-items-table");
-  list.innerHTML = "";
-
-  const header = document.createElement("div");
-  header.className = "li-header";
-  const hQty = document.createElement("div");
-  hQty.className = "li-qty";
-  hQty.textContent = "Qty";
-  const hName = document.createElement("div");
-  hName.className = "li-name";
-  hName.textContent = "Item";
-  const hSize = document.createElement("div");
-  hSize.className = "li-size";
-  hSize.textContent = "Size";
-  header.appendChild(hQty);
-  header.appendChild(hName);
-  header.appendChild(hSize);
-  list.appendChild(header);
-
-  items.forEach((item) => {
-    const row = document.createElement("div");
-    row.className = "li-row";
-    const qty = document.createElement("div");
-    qty.className = "li-qty";
-    qty.textContent = item.qty;
-    const name = document.createElement("div");
-    name.className = "li-name";
-    name.textContent = item.item_name;
-    const size = document.createElement("div");
-    size.className = "li-size";
-    size.textContent = item.size || "";
-    row.appendChild(qty);
-    row.appendChild(name);
-    row.appendChild(size);
-    list.appendChild(row);
-  });
-
-  const total = getStopTotal_(stop);
-  if (total != null) {
-    const totalRow = document.createElement("div");
-    totalRow.className = "li-row total-row";
-    const label = document.createElement("div");
-    label.className = "total-label";
-    label.textContent = "Total";
-    const val = document.createElement("div");
-    val.className = "total-value";
-    // toLocaleString for a real "$1,234.56" — toFixed(2) alone never adds
-    // the thousands separator, which reads oddly next to real order totals.
-    val.textContent = "$" + total.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    totalRow.appendChild(label);
-    totalRow.appendChild(val);
-    list.appendChild(totalRow);
-  }
-}
-
 function renderStopWarnings_(stop) {
   stop = stop || currentStop;
   if (!stop) return;
@@ -655,7 +701,7 @@ function renderStopWarnings_(stop) {
   const racksInput = document.getElementById("racks-unloaded-input");
   const entered = racksInput.value === "" ? null : Number(racksInput.value);
   if (entered != null && stop.racks_expected != null && entered !== stop.racks_expected) {
-    warnings.push("Racks unloaded (" + entered + ") doesn't match expected (" + stop.racks_expected + "). Flag it as an exception on the next screen if that's correct.");
+    warnings.push("Racks unloaded (" + entered + ") doesn't match expected (" + stop.racks_expected + "). Flag it as an exception below if that's correct.");
   }
 
   warnings.forEach((w) => {
@@ -667,22 +713,10 @@ function renderStopWarnings_(stop) {
 }
 
 // ==================================================================
-// EXCEPTIONS SCREEN
+// EXCEPTIONS (item flagging) — lives on the same screen as the stop
+// detail/racks now (screen-stop); see the HTML comment there and
+// openStopScreen_, which calls renderItemPickList_ directly.
 // ==================================================================
-function wireExceptionsScreen() {
-  document.getElementById("exceptions-back-btn").addEventListener("click", () => {
-    openStopScreen_(currentStop);
-  });
-  document.getElementById("to-signature-btn").addEventListener("click", () => {
-    openSignatureScreen_(currentStop);
-  });
-}
-
-function openExceptionsScreen_(stop) {
-  document.getElementById("exceptions-stop-name").textContent = stop.customer_name;
-  renderItemPickList_(stop);
-  showScreen_("screen-exceptions");
-}
 
 // Shared by renderItemPickList_ (initial render / on collapse-expand) and
 // buildExceptionInlineForm_ (live updates as the reason pill or qty stepper
@@ -901,11 +935,12 @@ function buildExceptionInlineForm_(ex, idx, stop, statusEl) {
 // ==================================================================
 function wireSignatureScreen() {
   document.getElementById("signature-back-btn").addEventListener("click", () => {
-    openExceptionsScreen_(currentStop);
+    openStopScreen_(currentStop);
   });
   document.getElementById("clear-sig-btn").addEventListener("click", clearSignaturePad_);
   document.getElementById("submit-btn").addEventListener("click", () => submitStop_(true));
   document.getElementById("skip-sig-btn").addEventListener("click", () => submitStop_(false));
+  document.getElementById("print-receipt-btn").addEventListener("click", printReceiptForCustomer_);
 }
 
 function openSignatureScreen_(stop) {
@@ -1137,6 +1172,7 @@ async function submitStop_(wantsSignature) {
     customer_code: currentStop.customer_code || "",
     cart_number: currentStop.cart_number || "",
     address: currentStop.address || "",
+    delivery_time: currentStop.delivery_time || "", // planned time, from the route plan — lets the backend log planned-vs-actual to the Route Timing sheet
     payment_terms: currentStop.payment_terms || "",
     order_numbers: (currentStop.orders || []).map((o) => o.order_number),
     racks_expected: currentStop.racks_expected,
@@ -1196,6 +1232,211 @@ async function submitStop_(wantsSignature) {
   rackPhotoDataUrl = null;
   renderRouteList_();
   showScreen_("screen-route");
+}
+
+// ==================================================================
+// PRINT RECEIPT FOR CUSTOMER (built entirely on-device — no backend call)
+// ==================================================================
+// G's ask: a customer standing at the truck who wants a paper copy right
+// then can't wait on the "official" PDF — that one only exists once this
+// stop's submit has actually reached the Apps Script backend (built there
+// via Google Docs, see buildAndSavePdf_ in Code.gs) and synced, which
+// might be minutes away in a dead zone, or might never happen at all if
+// the driver is printing WHILE still deciding whether to sign. So this is
+// a second, independent receipt — built straight from data already on the
+// iPad (currentStop, the in-progress exceptions/signature/rack photo) —
+// deliberately not sharing code with submitStop_'s payload-building even
+// though the two overlap, so this one has zero dependency on the backend
+// ever being reachable. Uses the browser's own native print (Safari's
+// print dialog → any AirPrint printer, or "Save to Files" for a PDF) —
+// no PDF-generation library, so nothing extra to fetch/bundle, and no new
+// failure mode beyond what Safari's print dialog already handles.
+function printReceiptForCustomer_() {
+  if (!currentStop) return;
+
+  const racksUnloaded = currentStop._racksUnloadedEntered != null
+    ? currentStop._racksUnloadedEntered
+    : (currentStop.driver_state && currentStop.driver_state.racks_unloaded);
+
+  // Same shape/cap as submitStop_'s exceptions array — duplicated on
+  // purpose (see the block comment above) rather than shared.
+  const exceptions = Object.values(flaggedItems).map((ex) => {
+    let qtyChange = Number(ex.qty_change);
+    if (!isFinite(qtyChange) || qtyChange < 0) qtyChange = 0;
+    if (qtyChange > ex.qty) qtyChange = ex.qty;
+    return { item_name: ex.item_name, reason: ex.reason, qty_change: qtyChange, notes: ex.notes };
+  });
+
+  const hasSignature = sigPad.hasStroke;
+  const signatureImage = hasSignature ? document.getElementById("sig-pad").toDataURL("image/png") : null;
+  const skipReasonSelect = document.getElementById("skip-sig-reason-select");
+  const skipReason = skipReasonSelect ? skipReasonSelect.value : "";
+
+  const html = buildReceiptHtml_(currentStop, {
+    racksUnloaded: racksUnloaded,
+    exceptions: exceptions,
+    hasSignature: hasSignature,
+    signatureImage: signatureImage,
+    skipReason: skipReason,
+    rackPhotoDataUrl: rackPhotoDataUrl,
+  });
+
+  // Blob URL + window.open in a new tab, triggered synchronously from the
+  // click handler (no `await` before this point) so Safari doesn't treat
+  // it as a blocked popup. Not revoking the object URL after opening —
+  // the new tab needs it to stay valid for as long as it's open/printing,
+  // and it's one small (tens of KB) URL per print, reclaimed automatically
+  // when that tab is closed or the app reloads. Deliberately not routed
+  // through the backend's ?action=get_pdf endpoint (used by the OTHER
+  // print button on the stop screen, for a stop's already-synced official
+  // PDF) — that endpoint needs a network round trip; this one is the
+  // whole point of not needing one.
+  const blobUrl = URL.createObjectURL(new Blob([html], { type: "text/html" }));
+  const win = window.open(blobUrl, "_blank");
+  if (!win) {
+    showToast("Couldn't open the print preview — check that pop-ups are allowed for this site.");
+  }
+}
+
+// Escapes text pulled from ERP/manifest data or typed in by the driver
+// (exception notes) before it goes into the receipt's HTML string — this
+// receipt is built with template literals, not DOM APIs, so nothing else
+// does this automatically.
+function escapeReceiptHtml_(value) {
+  return String(value == null ? "" : value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function formatPacificTimestamp_(date) {
+  // Explicit Pacific time (business operates in Pacific), not whatever
+  // timezone the driver's iPad happens to be set to.
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone: "America/Los_Angeles",
+    year: "numeric", month: "short", day: "numeric",
+    hour: "numeric", minute: "2-digit", second: "2-digit", hour12: true,
+  }).format(date) + " (Pacific)";
+}
+
+// Builds a complete, self-contained HTML document (its own <html>/<head>/
+// <body> — this is opened directly as a new page, not injected into the
+// app's own DOM) styled to read like Cascade Tropicals' own delivery
+// note: logo + company info, order info block, items table, Payment
+// Terms/Sub Total/Delivery Total/Total summary, then the same "Delivery
+// Confirmation Details" section (racks/exceptions/signature) as the
+// backend's Docs-generated PDF (see buildAndSavePdf_ in Code.gs) — kept
+// in step with that layout by eye, not by sharing code, since one runs in
+// the browser and the other in Apps Script and can't share functions.
+function buildReceiptHtml_(stop, opts) {
+  const e = escapeReceiptHtml_;
+  const orderNumbers = (stop.orders || []).map((o) => o.order_number);
+  const lineItems = getLineItems_(stop);
+  const totalQty = lineItems.reduce((sum, li) => sum + (Number(li.qty) || 0), 0);
+  const subtotal = getStopSubtotal_(stop);
+  const deliveryFee = getStopDeliveryFee_(stop);
+  const total = getStopTotal_(stop);
+  const money = (n) => (n != null ? "$" + Number(n).toFixed(2) : null);
+
+  const itemRows = lineItems.map((li) => (
+    "<tr><td>" + e(li.qty != null ? li.qty : "") + "</td><td>" + e(li.item_code || "") +
+    "</td><td>" + e(li.item_name || "") + "</td><td>" + e(li.size || "") + "</td></tr>"
+  )).join("");
+
+  const summaryLines = [];
+  if (subtotal != null) summaryLines.push(["Sub Total", money(subtotal)]);
+  if (deliveryFee != null) summaryLines.push(["Delivery Total", money(deliveryFee)]);
+  summaryLines.push(["Tax", "$0.00"]); // see the same note in buildAndSavePdf_ — always tax-exempt for this account
+  if (total != null) summaryLines.push(["Total", money(total)]);
+
+  const exceptionsHtml = opts.exceptions.length > 0
+    ? "<div class=\"section-heading\">Exceptions Noted</div>" +
+      opts.exceptions.map((ex) => (
+        "<div class=\"ex-line\">- " + e(ex.item_name || "(item)") + ": " + e(ex.reason || "") +
+        (ex.qty_change != null && ex.qty_change !== "" ? " (qty " + e(ex.qty_change) + ")" : "") +
+        (ex.notes ? " — " + e(ex.notes) : "") + "</div>"
+      )).join("")
+    : "<div class=\"section-heading\">Exceptions Noted</div><div>No exceptions — delivered as invoiced.</div>";
+
+  const signatureHtml = opts.hasSignature && opts.signatureImage
+    ? "<img class=\"sig-img\" src=\"" + opts.signatureImage + "\" alt=\"Customer signature\">"
+    : "<div>" + (opts.skipReason
+        ? "Not captured — " + e(opts.skipReason) + "."
+        : "Signature not yet captured.") + "</div>";
+
+  const rackPhotoHtml = opts.rackPhotoDataUrl
+    ? "<div class=\"section-heading\">Photo of Delivered Rack</div><img class=\"rack-photo\" src=\"" + opts.rackPhotoDataUrl + "\" alt=\"Delivered rack\">"
+    : "";
+
+  return "<!DOCTYPE html><html><head><meta charset=\"UTF-8\">" +
+    "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">" +
+    "<title>Delivery Receipt — " + e(stop.customer_name) + "</title>" +
+    "<style>" +
+    "@page { margin: 0.5in; }" +
+    "body { font-family: -apple-system, Helvetica, Arial, sans-serif; color: #111; margin: 24px; font-size: 13px; }" +
+    ".header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px; }" +
+    ".header img { width: 170px; }" +
+    ".company-info { font-size: 11px; margin-top: 6px; line-height: 1.5; }" +
+    ".title { font-size: 22px; font-weight: bold; margin-bottom: 6px; }" +
+    ".order-info { font-size: 11px; text-align: right; line-height: 1.6; }" +
+    ".deliver-to { border: 1px solid #ccc; padding: 8px 10px; margin-bottom: 12px; font-size: 12px; }" +
+    ".deliver-to .label { font-weight: bold; margin-bottom: 4px; }" +
+    "table.items { width: 100%; border-collapse: collapse; margin-bottom: 12px; font-size: 12px; }" +
+    "table.items th, table.items td { border: 0.75px solid #ccc; padding: 5px 6px; text-align: left; }" +
+    "table.items th { background: #e6e6e6; font-weight: bold; }" +
+    "table.items td:first-child, table.items th:first-child { width: 40px; }" +
+    "table.items tr.total-row td { font-weight: bold; }" +
+    ".summary-wrap { display: flex; justify-content: space-between; margin-bottom: 14px; }" +
+    ".payment-terms .label { font-weight: bold; font-size: 12px; }" +
+    ".summary-lines { text-align: right; font-size: 12px; line-height: 1.7; }" +
+    ".summary-lines .total-line { font-weight: bold; }" +
+    ".section-heading { font-weight: bold; font-size: 14px; margin: 12px 0 4px; }" +
+    ".ex-line { font-size: 12px; margin-bottom: 2px; }" +
+    ".sig-img { width: 220px; display: block; margin-top: 4px; border: 1px solid #ddd; }" +
+    ".rack-photo { width: 300px; display: block; margin-top: 4px; }" +
+    ".footer-note { font-style: italic; font-size: 10px; color: #666; margin-top: 16px; }" +
+    ".on-site-note { font-size: 10px; color: #888; margin-top: 4px; }" +
+    ".no-print { margin-top: 20px; text-align: center; }" +
+    ".no-print button { font-size: 16px; padding: 10px 20px; margin: 0 6px; }" +
+    "@media print { .no-print { display: none; } }" +
+    "</style></head><body>" +
+    "<div class=\"header\">" +
+    "<div><img src=\"" + CT_LOGO_DATA_URL + "\" alt=\"Cascade Tropicals\">" +
+    "<div class=\"company-info\">8711 160th St SE<br>Snohomish, WA 98296, US<br><br>Telephone: 206-623-9549</div></div>" +
+    "<div><div class=\"title\">Delivery Confirmation</div>" +
+    "<div class=\"order-info\">" +
+    "Order Number: " + (orderNumbers.length ? "#" + e(orderNumbers.join(", #")) : "-") + "<br>" +
+    "Account Number: " + e(stop.customer_code || "-") + "<br>" +
+    "Account Name: " + e(stop.customer_name || "-") + "<br>" +
+    "Cart Number: " + e(stop.cart_number || "-") + "<br>" +
+    "Truck: " + e(currentTruck || stop.truck || "-") + "<br>" +
+    "Delivery Date: " + e((manifest && manifest.dispatch_date) || "-") +
+    "</div></div></div>" +
+    "<div class=\"deliver-to\"><div class=\"label\">Deliver To:</div>" +
+    e(stop.customer_name || "") + (stop.address ? "<br>" + e(stop.address) : "") + "</div>" +
+    (lineItems.length > 0
+      ? "<table class=\"items\"><thead><tr><th>Qty</th><th>Item Code</th><th>Item Name</th><th>Size</th></tr></thead><tbody>" +
+        itemRows + "<tr class=\"total-row\"><td>" + e(totalQty) + "</td><td>Total</td><td></td><td></td></tr></tbody></table>"
+      : "") +
+    "<div class=\"summary-wrap\">" +
+    "<div class=\"payment-terms\"><div class=\"label\">Payment Terms</div><div>" + e(stop.payment_terms || "-") + "</div></div>" +
+    "<div class=\"summary-lines\">" + summaryLines.map((l, i) =>
+      "<div" + (i === summaryLines.length - 1 ? " class=\"total-line\"" : "") + ">" + l[0] + ": " + l[1] + "</div>"
+    ).join("") + "</div>" +
+    "</div>" +
+    "<div class=\"section-heading\">Delivery Confirmation Details</div>" +
+    "<div>Racks — Expected: " + e(stop.racks_expected != null ? stop.racks_expected : "-") +
+    "     Unloaded: " + e(opts.racksUnloaded != null ? opts.racksUnloaded : "-") + "</div>" +
+    rackPhotoHtml +
+    exceptionsHtml +
+    "<div class=\"section-heading\">Signature</div>" +
+    signatureHtml +
+    "<div class=\"footer-note\">Printed " + formatPacificTimestamp_(new Date()) + "</div>" +
+    "<div class=\"on-site-note\">Driver-printed copy, produced on-device at the delivery stop.</div>" +
+    "<div class=\"no-print\"><button onclick=\"window.print()\">Print</button><button onclick=\"window.close()\">Close</button></div>" +
+    "<script>window.addEventListener('load', function () { window.print(); });</script>" +
+    "</body></html>";
 }
 
 // Returns the backend's parsed response object on a genuine success
@@ -1334,7 +1575,9 @@ async function flushOfflineQueue_() {
     if (anyPdfSynced) applyStoredDriverState_();
     updateQueueBanner_();
     if (sentIds.size > 0) {
-      showToast(sentIds.size + " queued delivery/deliveries synced.");
+      // "item(s)" rather than "delivery/deliveries" — the queue can also
+      // hold a start_route payload (see startRoute_) alongside stop submits.
+      showToast(sentIds.size + " queued item(s) synced.");
     }
   } finally {
     flushInProgress_ = false;

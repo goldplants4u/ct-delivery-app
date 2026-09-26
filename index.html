@@ -11,7 +11,7 @@
      several minutes (or a hard reload) to actually show up otherwise. Bump
      this string any time app.js or style.css changes so the new file is
      guaranteed to load right away instead of a stale cached copy. -->
-<link rel="stylesheet" href="style.css?v=2026-09-24u">
+<link rel="stylesheet" href="style.css?v=2026-09-26c">
 </head>
 <body>
 
@@ -35,6 +35,29 @@
   </main>
 </section>
 
+<!-- BRIEFING (shown right after login, before the route list — G's request:
+     driver should see a quick "here's your day" screen and explicitly tap
+     Start Driving, which is what gets logged as the actual route-start
+     time in the Route Timing sheet, so the office can compare planned vs
+     actual. See openBriefingScreen_/startRoute_ in app.js. -->
+<section class="screen" id="screen-briefing">
+  <header class="app-bar">
+    <div class="title-wrap">
+      <h1 id="briefing-truck-title">Truck</h1>
+      <div class="sub" id="briefing-date-sub"></div>
+    </div>
+    <button class="logout-btn" id="briefing-logout-btn">Log out</button>
+  </header>
+  <main>
+    <div class="briefing-box">
+      <h2 id="briefing-greeting">Good morning</h2>
+      <p class="briefing-stat" id="briefing-stop-count"></p>
+      <p class="briefing-stat" id="briefing-leave-time"></p>
+      <button class="primary" id="start-driving-btn">Start Driving</button>
+    </div>
+  </main>
+</section>
+
 <!-- ROUTE LIST -->
 <section class="screen" id="screen-route">
   <header class="app-bar">
@@ -47,7 +70,12 @@
   <main id="route-list"></main>
 </section>
 
-<!-- STOP DETAIL -->
+<!-- STOP DETAIL + EXCEPTIONS — merged into one screen per G's request ("these
+     2 pages put on one... rack count is added there — no separate page for
+     rack count"). Racks unloaded is entered right here, and the same
+     tap-to-flag item list (which already shows qty/item/size per line) also
+     serves as the invoice review — no separate static invoice table above
+     it anymore. -->
 <section class="screen" id="screen-stop">
   <header class="app-bar">
     <button class="back" id="stop-back-btn">&larr; Stops</button>
@@ -66,9 +94,6 @@
       <button class="secondary" id="print-pdf-btn">Print Delivery Note</button>
     </div>
 
-    <div class="section-title">Invoice</div>
-    <div class="line-items-list" id="line-items-table"></div>
-
     <div class="section-title">Racks</div>
     <div class="racks-row">
       <div class="expected">Expected: <strong id="racks-expected-label">-</strong></div>
@@ -83,24 +108,12 @@
     </div>
 
     <div id="stop-warnings"></div>
-  </main>
-  <div class="bottom-bar">
-    <button class="primary" id="to-exceptions-btn" disabled>Next: Check for Exceptions</button>
-  </div>
-</section>
 
-<!-- EXCEPTIONS -->
-<section class="screen" id="screen-exceptions">
-  <header class="app-bar">
-    <button class="back" id="exceptions-back-btn">&larr; Back</button>
-    <div class="title-wrap"><h1>Exceptions</h1><div class="sub" id="exceptions-stop-name"></div></div>
-  </header>
-  <main>
     <p class="hint">Tap a line that was rejected, short, or damaged. Everything else is assumed delivered as invoiced.</p>
     <div id="item-pick-list"></div>
   </main>
   <div class="bottom-bar">
-    <button class="primary" id="to-signature-btn">Next: Signature</button>
+    <button class="primary" id="to-signature-btn" disabled>Next: Signature</button>
   </div>
 </section>
 
@@ -136,6 +149,14 @@
     </div>
   </main>
   <div class="bottom-bar">
+    <!-- Builds and prints a customer-facing delivery receipt entirely on
+         the iPad itself (see printReceiptForCustomer_ in app.js) — works
+         with zero signal, unlike the office-emailed PDF further down the
+         line, which only exists once this submit has actually reached the
+         backend. Available any time on this screen, whether or not the
+         driver has signed/submitted yet, so it covers "customer wants a
+         paper copy right now" at the actual moment that comes up. -->
+    <button class="secondary" id="print-receipt-btn">Print Copy for Customer</button>
     <button class="primary" id="submit-btn">Submit Delivery</button>
     <button class="secondary" id="skip-sig-btn">Submit Without Signature</button>
   </div>
@@ -143,6 +164,9 @@
 
 <div class="toast" id="toast"></div>
 
-<script src="app.js?v=2026-09-24u"></script>
+<!-- Must load before app.js — app.js's printReceiptForCustomer_ references
+     the CT_LOGO_DATA_URL global this file defines. -->
+<script src="logo-data.js?v=2026-09-26c"></script>
+<script src="app.js?v=2026-09-26c"></script>
 </body>
 </html>
